@@ -16,7 +16,7 @@ Primera version publica del juego, lista para jugar en Windows de 64 bits.
   que el control responda con precision.
 - Tres tipos de enemigo: bicho caminante, pua giratoria y mosca voladora.
 - Tuercas doradas como moneda, escudo que protege un golpe y permite romper
-  ladrillos, cajas con sorpresa y poste de meta con bandera.
+  ladrillos, cajas con sorpresa y compuerta de salida que se abre al tocarla.
 - Musica y efectos de sonido sintetizados en tiempo real con waveOut.
 - Marcador con puntos, tuercas, vidas, mundo y tiempo.
 

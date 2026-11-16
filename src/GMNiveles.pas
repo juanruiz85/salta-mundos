@@ -10,14 +10,14 @@ unit GMNiveles;
     '?'  caja con sorpresa
     'U'  caja ya usada
     '#'  viga metalica
-    '['  tubo, columna izquierda
-    ']'  tubo, columna derecha
+    '['  columna metalica, mitad izquierda
+    ']'  columna metalica, mitad derecha
     'c'  tuerca dorada
     'g'  bicho caminante
     's'  pua giratoria
     'f'  mosca voladora
     'M'  posicion inicial del heroe
-    'E'  poste de meta }
+    'E'  compuerta de salida }
 
 {$MODE DELPHI}
 {$H+}
@@ -41,8 +41,8 @@ type
     TierraClara: TColor32;
     Ladrillo: TColor32;
     LadrilloJunta: TColor32;
-    Tuberia: TColor32;
-    TuberiaClara: TColor32;
+    Columna: TColor32;
+    ColumnaClara: TColor32;
     Nube: TColor32;
     Estrellas: Boolean;
     Astro: TColor32;
@@ -175,7 +175,7 @@ const
       '      ========  ',
       '================',
       '================')),
-    (Nombre: 'tuberia';
+    (Nombre: 'columna';
      Filas: (
       '                ',
       '                ',
@@ -188,7 +188,7 @@ const
       '      []        ',
       '================',
       '================')),
-    (Nombre: 'tuberia_alta';
+    (Nombre: 'columna_alta';
      Filas: (
       '                ',
       '                ',
@@ -301,8 +301,8 @@ begin
         Result.TierraClara := RGBc(96, 170, 74);
         Result.Ladrillo := RGBc(188, 96, 52);
         Result.LadrilloJunta := RGBc(96, 50, 28);
-        Result.Tuberia := RGBc(48, 152, 84);
-        Result.TuberiaClara := RGBc(146, 224, 140);
+        Result.Columna := RGBc(126, 132, 152);
+        Result.ColumnaClara := RGBc(196, 204, 222);
         Result.Nube := RGBc(252, 254, 255);
         Result.Estrellas := False;
         Result.Astro := RGBc(255, 246, 190);
@@ -318,8 +318,8 @@ begin
         Result.TierraClara := RGBc(206, 138, 78);
         Result.Ladrillo := RGBc(154, 72, 60);
         Result.LadrilloJunta := RGBc(78, 36, 30);
-        Result.Tuberia := RGBc(62, 122, 152);
-        Result.TuberiaClara := RGBc(150, 210, 226);
+        Result.Columna := RGBc(150, 108, 96);
+        Result.ColumnaClara := RGBc(214, 172, 148);
         Result.Nube := RGBc(255, 226, 208);
         Result.Estrellas := False;
         Result.Astro := RGBc(255, 216, 120);
@@ -335,8 +335,8 @@ begin
         Result.TierraClara := RGBc(112, 126, 156);
         Result.Ladrillo := RGBc(96, 84, 142);
         Result.LadrilloJunta := RGBc(44, 38, 76);
-        Result.Tuberia := RGBc(62, 168, 150);
-        Result.TuberiaClara := RGBc(158, 236, 212);
+        Result.Columna := RGBc(98, 106, 146);
+        Result.ColumnaClara := RGBc(168, 178, 214);
         Result.Nube := RGBc(150, 160, 196);
         Result.Estrellas := True;
         Result.Astro := RGBc(238, 240, 220);
@@ -352,8 +352,8 @@ begin
         Result.TierraClara := RGBc(126, 108, 142);
         Result.Ladrillo := RGBc(124, 94, 66);
         Result.LadrilloJunta := RGBc(58, 40, 28);
-        Result.Tuberia := RGBc(150, 122, 62);
-        Result.TuberiaClara := RGBc(222, 196, 118);
+        Result.Columna := RGBc(120, 112, 134);
+        Result.ColumnaClara := RGBc(188, 180, 204);
         Result.Nube := RGBc(70, 62, 88);
         Result.Estrellas := True;
         Result.Astro := RGBc(120, 220, 210);
@@ -369,8 +369,8 @@ begin
         Result.TierraClara := RGBc(240, 210, 152);
         Result.Ladrillo := RGBc(198, 138, 82);
         Result.LadrilloJunta := RGBc(104, 66, 36);
-        Result.Tuberia := RGBc(56, 158, 168);
-        Result.TuberiaClara := RGBc(148, 232, 228);
+        Result.Columna := RGBc(172, 140, 98);
+        Result.ColumnaClara := RGBc(228, 206, 162);
         Result.Nube := RGBc(255, 250, 240);
         Result.Estrellas := False;
         Result.Astro := RGBc(255, 250, 220);
@@ -386,8 +386,8 @@ begin
       Result.TierraClara := RGBc(146, 152, 174);
       Result.Ladrillo := RGBc(152, 112, 82);
       Result.LadrilloJunta := RGBc(70, 50, 36);
-      Result.Tuberia := RGBc(216, 138, 48);
-      Result.TuberiaClara := RGBc(252, 196, 110);
+      Result.Columna := RGBc(142, 148, 166);
+      Result.ColumnaClara := RGBc(208, 214, 232);
       Result.Nube := RGBc(96, 104, 122);
       Result.Estrellas := False;
       Result.Astro := RGBc(255, 214, 140);
@@ -479,13 +479,13 @@ begin
         AgregarPorNombre(Result, 'piso_monedas');
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'piso');
-        AgregarPorNombre(Result, 'tuberia');
+        AgregarPorNombre(Result, 'columna');
         AgregarPorNombre(Result, 'enemigos');
         AgregarPorNombre(Result, 'piso');
         AgregarPorNombre(Result, 'escalera');
         AgregarPorNombre(Result, 'hueco_bricks');
         AgregarPorNombre(Result, 'plataformas');
-        AgregarPorNombre(Result, 'tuberia_alta');
+        AgregarPorNombre(Result, 'columna_alta');
         AgregarPorNombre(Result, 'piso');
         AgregarPorNombre(Result, 'final');
       end;
@@ -494,14 +494,14 @@ begin
         AgregarPorNombre(Result, 'inicio');
         AgregarPorNombre(Result, 'piso');
         AgregarPorNombre(Result, 'enemigos');
-        AgregarPorNombre(Result, 'tuberia');
+        AgregarPorNombre(Result, 'columna');
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'bloques');
         AgregarPorNombre(Result, 'mosca');
         AgregarPorNombre(Result, 'piso_monedas');
         AgregarPorNombre(Result, 'bicho_pua');
         AgregarPorNombre(Result, 'hueco_bricks');
-        AgregarPorNombre(Result, 'tuberia_alta');
+        AgregarPorNombre(Result, 'columna_alta');
         AgregarPorNombre(Result, 'enemigos');
         AgregarPorNombre(Result, 'escalera');
         AgregarPorNombre(Result, 'final');
@@ -513,14 +513,14 @@ begin
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'mosca');
         AgregarPorNombre(Result, 'piso_monedas');
-        AgregarPorNombre(Result, 'tuberia');
+        AgregarPorNombre(Result, 'columna');
         AgregarPorNombre(Result, 'bloques');
         AgregarPorNombre(Result, 'bicho_pua');
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'plataformas');
         AgregarPorNombre(Result, 'enemigos');
         AgregarPorNombre(Result, 'mosca');
-        AgregarPorNombre(Result, 'tuberia_alta');
+        AgregarPorNombre(Result, 'columna_alta');
         AgregarPorNombre(Result, 'hueco_bricks');
         AgregarPorNombre(Result, 'escalera');
         AgregarPorNombre(Result, 'final');
@@ -532,7 +532,7 @@ begin
         AgregarPorNombre(Result, 'bicho_pua');
         AgregarPorNombre(Result, 'hueco_bricks');
         AgregarPorNombre(Result, 'enemigos');
-        AgregarPorNombre(Result, 'tuberia_alta');
+        AgregarPorNombre(Result, 'columna_alta');
         AgregarPorNombre(Result, 'mosca');
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'plataformas');
@@ -548,14 +548,14 @@ begin
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'piso_monedas');
         AgregarPorNombre(Result, 'enemigos');
-        AgregarPorNombre(Result, 'tuberia');
+        AgregarPorNombre(Result, 'columna');
         AgregarPorNombre(Result, 'hueco_bricks');
         AgregarPorNombre(Result, 'bicho_pua');
         AgregarPorNombre(Result, 'mosca');
         AgregarPorNombre(Result, 'plataformas');
         AgregarPorNombre(Result, 'hueco');
         AgregarPorNombre(Result, 'enemigos');
-        AgregarPorNombre(Result, 'tuberia_alta');
+        AgregarPorNombre(Result, 'columna_alta');
         AgregarPorNombre(Result, 'escalera');
         AgregarPorNombre(Result, 'hueco_bricks');
         AgregarPorNombre(Result, 'final');
@@ -564,7 +564,7 @@ begin
     begin
       AgregarPorNombre(Result, 'inicio');
       AgregarPorNombre(Result, 'enemigos');
-      AgregarPorNombre(Result, 'tuberia_alta');
+      AgregarPorNombre(Result, 'columna_alta');
       AgregarPorNombre(Result, 'hueco');
       AgregarPorNombre(Result, 'plataformas');
       AgregarPorNombre(Result, 'mosca');
@@ -573,7 +573,7 @@ begin
       AgregarPorNombre(Result, 'hueco_bricks');
       AgregarPorNombre(Result, 'enemigos');
       AgregarPorNombre(Result, 'mosca');
-      AgregarPorNombre(Result, 'tuberia');
+      AgregarPorNombre(Result, 'columna');
       AgregarPorNombre(Result, 'plataformas');
       AgregarPorNombre(Result, 'bicho_pua');
       AgregarPorNombre(Result, 'escalera');

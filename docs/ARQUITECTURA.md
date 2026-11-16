@@ -72,7 +72,7 @@ Estados de `TJuego` y sus transiciones:
 | `ejJugando` | Inicio de partida o reanudación | P: pausa; muerte: `ejMuere`; meta: `ejFinNivel`; Esc: título |
 | `ejPausa` | P durante el juego | P o Enter: vuelve a `ejJugando`; Esc: título |
 | `ejMuere` | Contacto con enemigo sin escudo, caída o tiempo agotado | 96 fotogramas después: resta vida y reinicia el nivel o pasa a `ejGameOver` |
-| `ejFinNivel` | Tocar el poste de meta | 120 fotogramas después: siguiente nivel o `ejVictoria` |
+| `ejFinNivel` | Tocar la compuerta de salida | 130 fotogramas después: siguiente nivel o `ejVictoria` |
 | `ejGameOver` | Última vida perdida | Enter tras 40 fotogramas: título |
 | `ejVictoria` | Terminar el nivel 6 | Enter tras 40 fotogramas: título |
 
@@ -176,13 +176,13 @@ Las animaciones se eligen por contador de fotogramas: el bicho usa `(Fase div 6)
 | Ladrillo | Relleno base, cuatro líneas horizontales de mortero cada 4 px, junta vertical alternada en x=4 y x=12, bisel claro arriba e izquierda y oscuro abajo y derecha |
 | Caja | Tres variantes de brillo, bisel, cuatro remaches y una tuerca dibujada en el centro |
 | Caja usada | Relleno apagado, bisel y remaches, sin símbolo central |
-| Tubo, tapa izquierda | Cuerpo con margen transparente exterior, brillo en el borde interior, labio superior con línea de sombra |
-| Tubo, tapa derecha | Igual, con el brillo en el lado opuesto |
-| Tubo, cuerpo izquierdo | Cuerpo de 2 px de margen, bandas claras y oscuras |
-| Tubo, cuerpo derecho | Igual, con las bandas invertidas |
+| Columna, capitel izquierdo | Cuerpo con margen transparente exterior, banda de aviso amarilla y negra, baliza y remaches |
+| Columna, capitel derecho | Igual, con el brillo en el lado opuesto |
+| Columna, cuerpo izquierdo | Cuerpo con margen de 3 px, borde claro y dos remaches |
+| Columna, cuerpo derecho | Igual, con las bandas invertidas |
 | Viga | Relleno metálico, banda clara arriba, banda oscura abajo y cuatro remaches |
 
-Los tiles se reconstruyen al cargar cada nivel (`FreeAndNil(FTiles)` y `ConstruirTiles` con el tema), porque los colores cambian de un mundo a otro. En el dibujo, un tubo usa la tapa si el tile de arriba no es otro tubo y el cuerpo si lo es.
+Los tiles se reconstruyen al cargar cada nivel (`FreeAndNil(FTiles)` y `ConstruirTiles` con el tema), porque los colores cambian de un mundo a otro. En el dibujo, una columna usa el capitel si el tile de arriba no es otra columna y el cuerpo si lo es.
 
 ## 6. Formato de los niveles
 
@@ -198,18 +198,18 @@ Leyenda de caracteres:
 | `?` | Caja con sorpresa | Sí |
 | `U` | Caja ya usada | Sí |
 | `#` | Viga metálica | Sí |
-| `[` | Tubo, columna izquierda | Sí |
-| `]` | Tubo, columna derecha | Sí |
+| `[` | Columna metálica, mitad izquierda | Sí |
+| `]` | Columna metálica, mitad derecha | Sí |
 | `c` | Tuerca dorada | No |
 | `g` | Bicho caminante | No |
 | `s` | Púa giratoria | No |
 | `f` | Mosca voladora | No |
 | `M` | Posición inicial del héroe | No |
-| `E` | Poste de meta | No |
+| `E` | Compuerta de salida (dos columnas, cuatro filas) | No |
 
 `EsSolido` reconoce `=`, `B`, `?`, `U`, `#`, `[` y `]`. Fuera del mapa, `TNivel.Caracter` devuelve `'='` por debajo de la última fila y `' '` por arriba o a los costados; el motor de juego, en cambio, trata los costados como sólidos en `SolidoEn` para que nadie salga del escenario.
 
-Hay trece piezas con nombre (`inicio`, `piso`, `piso_monedas`, `hueco`, `hueco_bricks`, `bloques`, `escalera`, `tuberia`, `tuberia_alta`, `plataformas`, `enemigos`, `bicho_pua`, `final`) y una pieza adicional, `mosca`, que se agrega con `AgregarPorNombre` sin estar en la tabla. Cada nivel encadena entre 14 y 17 piezas:
+Hay trece piezas con nombre (`inicio`, `piso`, `piso_monedas`, `hueco`, `hueco_bricks`, `bloques`, `escalera`, `columna`, `columna_alta`, `plataformas`, `enemigos`, `bicho_pua`, `final`) y una pieza adicional, `mosca`, que se agrega con `AgregarPorNombre` sin estar en la tabla. Cada nivel encadena entre 14 y 17 piezas:
 
 | Nivel | Tema | Piezas | Columnas | Ancho en píxeles |
 | --- | --- | --- | --- | --- |
@@ -335,9 +335,9 @@ La autoprueba se ejecuta con `--autoprueba` o `--selftest`. El `.dpr` crea `TJue
 4. Pared: se construye un muro de cuatro columnas por tres filas, se corre a la derecha 90 fotogramas y el héroe no debe atravesarlo ni quedarse sin avanzar.
 5. Partida automática: 2400 fotogramas corriendo a la derecha y saltando cinco de cada treinta deben recoger al menos una tuerca y avanzar más de 96 píxeles.
 6. Dibujo: se cargan los seis niveles, se simulan tres fotogramas en cada uno y se llama a `Dibujar` sin ventana.
-7. Fin de nivel: se coloca al héroe sobre el poste, se comprueba que el estado pasa a `ejFinNivel` y que tras 140 fotogramas el juego avanza al mundo 2.
+7. Fin de nivel: se coloca al héroe junto a la compuerta, se comprueba que el estado pasa a `ejFinNivel`, que las hojas se abren y que tras 140 fotogramas el juego avanza al mundo 2.
 8. Muerte: se deja caer al héroe fuera del mapa, se comprueba que entra en `ejMuere` y que tras 130 fotogramas pierde una vida y reanuda la partida.
-9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar al poste en los seis mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
+9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar a la compuerta en los seis mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
 10. Entrada por flanco: pulsando salto un solo fotograma, el héroe debe despegar del suelo; pulsando avance, su velocidad horizontal debe dejar de ser cero.
 
 El paso 1 mide el ancho en tiles (`Nivel.Ancho`), no en píxeles. El paso 5 no exige terminar el nivel: comprueba que el bucle de juego, la recogida de tuercas y el avance funcionan juntos. El paso 6 no tiene aserciones; su valor es que cualquier excepción de dibujo hace fallar la ejecución. El paso 9 usa `FMortalInactivo` para desactivar el daño de los enemigos, de modo que mide la geometría del nivel y no la puntería del bot.

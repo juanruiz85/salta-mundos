@@ -107,7 +107,7 @@ type
     FFotograma: Integer;
     FTiempoEstado: Integer;
     FCajasGolpeadas: Integer;
-    FBanderaY: Single;
+    FAperturaPuerta: Single;
 
     FTeclas: TPulsos;
     FTeclasAntes: TPulsos;
@@ -183,7 +183,8 @@ type
     procedure DibujarEstrellas;
     procedure DibujarAstro;
     procedure DibujarCirculo(CX, CY, Radio: Integer; Color: TColor32);
-    procedure DibujarPoste(Pantalla: TSuperficie; X, Y: Integer; Fila: Integer);
+    procedure DibujarPuerta(Pantalla: TSuperficie; X, Y: Integer);
+    function RectPuerta(Columna, Fila: Integer): TRectI;
     procedure DibujarSpriteEntidad(E: TEntidad);
     function SpriteBicho(E: TEntidad): TSuperficie;
     function SpritePua(E: TEntidad): TSuperficie;
@@ -532,7 +533,7 @@ begin
 
   FreeAndNil(FTiles);
   FTiles := ConstruirTiles(Tema.Tierra, Tema.TierraClara, Tema.Ladrillo,
-    Tema.LadrilloJunta, Tema.Tuberia, Tema.TuberiaClara);
+    Tema.LadrilloJunta, Tema.Columna, Tema.ColumnaClara);
   LimpiarEntidades;
   SembrarEntidades;
 
@@ -562,7 +563,7 @@ begin
   FTiempoAcum := 0;
   FCajasGolpeadas := 0;
   FCamaraX := LimitarF(FHeroeX - 112, 0, Max(0, FAnchoMapa * TAM_TILE - ANCHO_VIRTUAL));
-  FBanderaY := 4 * TAM_TILE;
+  FAperturaPuerta := 0;
   FTiempoEstado := 0;
 end;
 
@@ -807,7 +808,7 @@ var
   VelMax: Single;
   ChoqueX, ChoqueY, EnSuelo: Boolean;
   R: TRectI;
-  I, ColCentro, FilaCabeza: Integer;
+  I, ColCentro, FilaCabeza, C, C1, C2, F, F1, F2: Integer;
   Moviendo: Boolean;
 begin
   if FHeroeReforzado then
@@ -887,7 +888,9 @@ begin
     begin
       { Golpe contra el techo: se busca la caja afectada. }
       ColCentro := Floor((FHeroeX + HEROE_ANCHO / 2) / TAM_TILE);
-      FilaCabeza := Floor(FHeroeY / TAM_TILE);
+      { Tras el choque el heroe queda justo debajo del bloque, asi que la fila
+        que hay que golpear es la de un pixel mas arriba. }
+      FilaCabeza := Floor((FHeroeY - 1) / TAM_TILE);
       for I := 0 to 1 do
         if TileEn(ColCentro + I, FilaCabeza) in ['B', '?'] then
         begin
@@ -958,10 +961,17 @@ begin
   if FHeroeX > FAnchoMapa * TAM_TILE - HEROE_ANCHO then
     FHeroeX := FAnchoMapa * TAM_TILE - HEROE_ANCHO;
 
-  { Meta: tocar el poste. }
-  if TileEn(Floor((FHeroeX + HEROE_ANCHO / 2) / TAM_TILE),
-    Floor((FHeroeY + HEROE_ALTO / 2) / TAM_TILE)) = 'E' then
-    TerminarNivel;
+  { Meta: la compuerta de salida ocupa dos columnas y cuatro filas, y se
+    activa con que el heroe toque cualquier punto de esa caja. }
+  C1 := Floor(FHeroeX / TAM_TILE);
+  C2 := Floor((FHeroeX + HEROE_ANCHO - 1) / TAM_TILE) + 1;
+  F1 := Floor(FHeroeY / TAM_TILE);
+  F2 := Floor((FHeroeY + HEROE_ALTO - 1) / TAM_TILE);
+  for F := F1 to F2 do
+    for C := C1 to C2 do
+      if TileEn(C, F) = 'E' then
+        if HaySolape(RectHeroe, RectPuerta(C, F)) then
+          TerminarNivel;
 
   { Caida al vacio. }
   if FHeroeY > ALTO_MUNDO + 40 then
@@ -1236,10 +1246,11 @@ end;
 procedure TJuego.ActualizarFinNivel;
 begin
   Inc(FTiempoEstado);
-  if FBanderaY < 8 * TAM_TILE then
-    FBanderaY := FBanderaY + 2.4;
+  { Las hojas de la compuerta se abren en algo menos de un segundo. }
+  if FAperturaPuerta < 1 then
+    FAperturaPuerta := LimitarF(FAperturaPuerta + 0.022, 0, 1);
   ActualizarParticulas;
-  if FTiempoEstado > 120 then
+  if FTiempoEstado > 130 then
     AvanzarNivel;
 end;
 
@@ -1356,22 +1367,60 @@ begin
   DibujarCirculo(262, ALTO_HUD + 26, 4, Aclarar(Tema.Astro, 16));
 end;
 
-procedure TJuego.DibujarPoste(Pantalla: TSuperficie; X, Y: Integer; Fila: Integer);
-var
-  Tope: Integer;
-  Tema: TTema;
+function TJuego.RectPuerta(Columna, Fila: Integer): TRectI;
 begin
-  Tema := FNivel.Tema;
-  Tope := Y - (Fila - 3) * TAM_TILE;
-  Pantalla.Barra(X + 7, Tope, 2, (Fila - 3) * TAM_TILE + TAM_TILE, RGBc(196, 202, 214));
-  Pantalla.Barra(X + 7, Tope, 1, (Fila - 3) * TAM_TILE + TAM_TILE, RGBc(240, 244, 252));
-  DibujarCirculo(X + 8, Tope - 2, 4, RGBc(255, 214, 92));
-  DibujarCirculo(X + 7, Tope - 3, 2, RGBc(255, 246, 190));
-  { Bandera que baja cuando el heroe toca el poste. }
-  Pantalla.Barra(X + 3, Round(FBanderaY) + 4, 10, 6, RGBc(222, 84, 68));
-  Pantalla.Barra(X + 3, Round(FBanderaY) + 4, 10, 1, RGBc(255, 158, 130));
-  Pantalla.Barra(X + 12, Round(FBanderaY) + 4, 3, 6, Oscurecer(RGBc(222, 84, 68), 40));
-  Pantalla.Barra(X + 3, Round(FBanderaY) + 4, 2, 6, Tema.CieloArriba);
+  { La compuerta se apoya en la fila marcada con E y sube cuatro filas. }
+  Result := RectI(Columna * TAM_TILE, (Fila - 3) * TAM_TILE, 2 * TAM_TILE, 4 * TAM_TILE);
+end;
+
+procedure TJuego.DibujarPuerta(Pantalla: TSuperficie; X, Y: Integer);
+var
+  Tope, Base, Ancho, Desplazamiento, I: Integer;
+  ColorLuz, Marco, Brillo, Hoja: TColor32;
+begin
+  Ancho := 2 * TAM_TILE;
+  Base := Y + TAM_TILE;
+  Tope := Y - 3 * TAM_TILE;
+  Marco := RGBc(104, 110, 132);
+  Brillo := RGBc(176, 184, 210);
+  Hoja := RGBc(78, 84, 106);
+  ColorLuz := MezclarColor(RGBc(228, 92, 78), RGBc(118, 228, 138), FAperturaPuerta);
+
+  { Dintel y base del marco. }
+  Pantalla.Barra(X, Tope, Ancho, 5, Marco);
+  Pantalla.Barra(X, Tope, Ancho, 2, Brillo);
+  Pantalla.Barra(X, Base - 3, Ancho, 3, Oscurecer(Marco, 30));
+
+  { Hojas correderas: se dibujan antes que los postes para que se guarden
+    detras de ellos al abrirse. }
+  Desplazamiento := Round(FAperturaPuerta * 11);
+  Pantalla.Barra(X + 3 - Desplazamiento, Tope + 5, 12, Base - Tope - 8, Hoja);
+  Pantalla.Barra(X + 5 - Desplazamiento, Tope + 7, 8, Base - Tope - 12,
+    Oscurecer(Hoja, 10));
+  Pantalla.Barra(X + 12 - Desplazamiento, Tope + 5, 2, Base - Tope - 8, ColorLuz);
+  Pantalla.Barra(X + Ancho - 15 + Desplazamiento, Tope + 5, 12, Base - Tope - 8, Hoja);
+  Pantalla.Barra(X + Ancho - 13 + Desplazamiento, Tope + 7, 8, Base - Tope - 12,
+    Oscurecer(Hoja, 10));
+  Pantalla.Barra(X + Ancho - 14 + Desplazamiento, Tope + 5, 2, Base - Tope - 8, ColorLuz);
+
+  { Postes verticales del marco, por delante de las hojas. }
+  Pantalla.Barra(X, Tope, 4, Base - Tope, Marco);
+  Pantalla.Barra(X, Tope, 2, Base - Tope, Brillo);
+  Pantalla.Barra(X + Ancho - 4, Tope, 4, Base - Tope, Oscurecer(Marco, 20));
+  Pantalla.Barra(X + Ancho - 2, Tope, 2, Base - Tope, Oscurecer(Marco, 44));
+  for I := 0 to 1 do
+  begin
+    Pantalla.Barra(X + 1, Tope + 9 + I * 26, 2, 2, Brillo);
+    Pantalla.Barra(X + Ancho - 3, Tope + 9 + I * 26, 2, 2, Brillo);
+  end;
+
+  { Baliza superior: parpadea cuando la compuerta ya esta abierta. }
+  if (FAperturaPuerta < 1) or ((FFotograma div 6) mod 2 = 0) then
+  begin
+    DibujarCirculo(X + Ancho div 2, Tope - 6, 4, Oscurecer(ColorLuz, 60));
+    DibujarCirculo(X + Ancho div 2, Tope - 6, 3, ColorLuz);
+    DibujarCirculo(X + Ancho div 2 - 1, Tope - 7, 1, Aclarar(ColorLuz, 60));
+  end;
 end;
 
 procedure TJuego.DibujarFondo;
@@ -1419,23 +1468,23 @@ begin
         '[':
           begin
             if TileEn(Col, Fila - 1) in ['[', ']'] then
-              S := FTiles.TuboCuerpoIzq
+              S := FTiles.ColumnaCuerpoIzq
             else
-              S := FTiles.TuboTapaIzq;
-            FLienzo.Copiar(X, Y, S);
+              S := FTiles.ColumnaTapaIzq;
+            FLienzo.CopiarColor(X, Y, S, COLOR_TRANSPARENTE);
           end;
         ']':
           begin
             if TileEn(Col, Fila - 1) in ['[', ']'] then
-              S := FTiles.TuboCuerpoDer
+              S := FTiles.ColumnaCuerpoDer
             else
-              S := FTiles.TuboTapaDer;
-            FLienzo.Copiar(X, Y, S);
+              S := FTiles.ColumnaTapaDer;
+            FLienzo.CopiarColor(X, Y, S, COLOR_TRANSPARENTE);
           end;
         'c':
           FLienzo.CopiarColor(X, Y, FObjetos.Moneda[((FFotograma div 8) + Col) mod 4],
             COLOR_TRANSPARENTE);
-        'E': DibujarPoste(FLienzo, X, Y, Fila);
+        'E': DibujarPuerta(FLienzo, X, Y);
       end;
     end;
   end;
@@ -1686,7 +1735,7 @@ begin
         DibujarHud;
         if FEstado = ejPausa then
           DibujarPausa;
-        if FEstado = ejFinNivel then
+        if (FEstado = ejFinNivel) and (FTiempoEstado > 45) then
           DibujarFinNivel;
       end;
     ejGameOver:
@@ -1737,7 +1786,7 @@ end;
 
 procedure TJuego.Capturar(const Carpeta: string);
 var
-  I, J: Integer;
+  I, J, Columna: Integer;
   P: TPulsos;
 begin
   ForceDirectories(Carpeta);
@@ -1770,6 +1819,37 @@ begin
     Dibujar;
     FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) +
       'nivel' + IntToStr(I) + '.bmp');
+
+    { Segunda captura junto a la compuerta, cerrada y abierta. }
+    Columna := 0;
+    for J := 0 to FAnchoMapa - 1 do
+      if FMapa[8][J + 1] = 'E' then
+        Columna := J;
+    if Columna > 0 then
+    begin
+      FHeroeX := (Columna - 7) * TAM_TILE;
+      FHeroeY := 8 * TAM_TILE + 1;
+      FHeroeVX := 0;
+      FHeroeVY := 0;
+      FCamaraX := LimitarF(FHeroeX - 118, 0, Max(0, FAnchoMapa * TAM_TILE - ANCHO_VIRTUAL));
+      FAperturaPuerta := 0;
+      FillChar(P, SizeOf(P), 0);
+      for J := 1 to 20 do
+      begin
+        DarPulsos(P);
+        LeerTeclas;
+        if FEstado = ejJugando then
+          ActualizarJugando;
+      end;
+      Dibujar;
+      FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) +
+        'final' + IntToStr(I) + '.bmp');
+      FAperturaPuerta := 1;
+      Dibujar;
+      FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) +
+        'final_abierto' + IntToStr(I) + '.bmp');
+      FAperturaPuerta := 0;
+    end;
   end;
 end;
 
@@ -1789,7 +1869,7 @@ begin
     Nivel := CrearNivel(Numero);
     Tema := Nivel.Tema;
     Tiles := ConstruirTiles(Tema.Tierra, Tema.TierraClara, Tema.Ladrillo,
-      Tema.LadrilloJunta, Tema.Tuberia, Tema.TuberiaClara);
+      Tema.LadrilloJunta, Tema.Columna, Tema.ColumnaClara);
     Grande := TSuperficie.Create(Nivel.Ancho * TAM_TILE, FILAS_NIVEL * TAM_TILE);
     Grande.Limpiar(Tema.CieloAbajo);
     for Fila := 0 to FILAS_NIVEL - 1 do
@@ -1806,23 +1886,29 @@ begin
           '#': Grande.Copiar(X, Y, Tiles.Viga);
           '[': begin
                  if Nivel.Caracter(Columna, Fila - 1) in ['[', ']'] then
-                   S := Tiles.TuboCuerpoIzq
+                   S := Tiles.ColumnaCuerpoIzq
                  else
-                   S := Tiles.TuboTapaIzq;
-                 Grande.Copiar(X, Y, S);
+                   S := Tiles.ColumnaTapaIzq;
+                 Grande.CopiarColor(X, Y, S, COLOR_TRANSPARENTE);
                end;
           ']': begin
                  if Nivel.Caracter(Columna, Fila - 1) in ['[', ']'] then
-                   S := Tiles.TuboCuerpoDer
+                   S := Tiles.ColumnaCuerpoDer
                  else
-                   S := Tiles.TuboTapaDer;
-                 Grande.Copiar(X, Y, S);
+                   S := Tiles.ColumnaTapaDer;
+                 Grande.CopiarColor(X, Y, S, COLOR_TRANSPARENTE);
                end;
           'c': Grande.Copiar(X, Y, FObjetos.Moneda[0]);
           'g': Grande.Copiar(X, Y, FEnemigos.Bicho[0]);
           's': Grande.Copiar(X, Y, FEnemigos.Pua[0]);
           'f': Grande.Copiar(X, Y, FEnemigos.Mosca[0]);
-          'E': Grande.Barra(X + 7, Y - 48, 2, 64, RGBc(220, 224, 236));
+          'E':
+            begin
+              Grande.Barra(X, Y - 48, 32, 5, RGBc(104, 110, 132));
+              Grande.Barra(X, Y - 48, 4, 64, RGBc(104, 110, 132));
+              Grande.Barra(X + 28, Y - 48, 4, 64, RGBc(104, 110, 132));
+              Grande.Barra(X + 4, Y - 43, 24, 56, RGBc(78, 84, 106));
+            end;
         end;
       end;
     Grande.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) + 'mapa' + IntToStr(Numero) + '.bmp');
@@ -2102,6 +2188,28 @@ begin
   Actualizar;
   Actualizar;
   Comprobar(FHeroeVX <= 0, 'la pulsacion de avance no mueve al heroe');
+
+  Registrar('Paso 11: la caja se abre al golpearla desde abajo');
+  CargarNivel(1);
+  FEstado := ejJugando;
+  FHeroeX := 3 * TAM_TILE;
+  FHeroeY := 8 * TAM_TILE + 1;
+  FHeroeVX := 0;
+  FHeroeVY := 0;
+  FHeroeEnSuelo := True;
+  PonerTile(3, 5, '?');
+  FTuercas := 0;
+  FillChar(P, SizeOf(P), 0);
+  P.Salto := True;
+  for I := 1 to 45 do
+  begin
+    if I > 14 then
+      P.Salto := False;
+    DarPulsos(P);
+    Actualizar;
+  end;
+  Comprobar(TileEn(3, 5) <> 'U', 'la caja no se abre al golpearla desde abajo');
+  Comprobar(FTuercas < 1, 'la caja abierta no entrega la tuerca');
 
   { 6. Dibujo de los seis niveles sin ventana. }
   for Numero := 1 to TOTAL_NIVELES do

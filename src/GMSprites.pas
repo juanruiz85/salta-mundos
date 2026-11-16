@@ -31,10 +31,10 @@ type
     Ladrillo: TSuperficie;
     Caja: array[0..2] of TSuperficie;
     CajaUsada: TSuperficie;
-    TuboTapaIzq: TSuperficie;
-    TuboTapaDer: TSuperficie;
-    TuboCuerpoIzq: TSuperficie;
-    TuboCuerpoDer: TSuperficie;
+    ColumnaTapaIzq: TSuperficie;
+    ColumnaTapaDer: TSuperficie;
+    ColumnaCuerpoIzq: TSuperficie;
+    ColumnaCuerpoDer: TSuperficie;
     Viga: TSuperficie;
     constructor Create;
     destructor Destroy; override;
@@ -73,7 +73,7 @@ type
 function PaletaBase: TPaleta;
 function ConstruirSprite(const Filas: array of string; const Paleta: TPaleta): TSuperficie;
 function ConstruirTiles(const Tierra, TierraClara, Ladrillo, LadrilloJunta,
-  Tuberia, TuberiaClara: TColor32): TTiles;
+  Columna, ColumnaClara: TColor32): TTiles;
 function CrearMoneda(Fase: Integer): TSuperficie;
 function CrearEscudo: TSuperficie;
 function CrearPua(Fase: Integer): TSuperficie;
@@ -443,56 +443,69 @@ begin
   Result.Barra(12, 12, 2, 2, Oscurecer(Base, 20));
 end;
 
-function CrearTubo(Base, Clara: TColor32; EsIzquierda, EsTapa: Boolean): TSuperficie;
+function CrearColumna(Base, Clara: TColor32; EsIzquierda, EsTapa: Boolean): TSuperficie;
 var
-  X0, X1: Integer;
+  X0, X1, I: Integer;
 begin
   Result := TSuperficie.Create(TAM_TILE, TAM_TILE);
   Result.Limpiar(COLOR_TRANSPARENTE);
-  { El cuerpo del tubo deja un margen transparente del lado exterior, de modo
-    que la tapa se vea mas ancha que el cuerpo, como en las tuberias clasicas. }
-  if EsTapa then
+  { Columna metalica de dos tiles de ancho, con aire a los lados, costura
+    central y remaches. No lleva labio ni boca, para que se lea como una
+    estructura industrial y no como una tuberia. }
+  if EsIzquierda then
   begin
-    X0 := 0;
-    X1 := TAM_TILE - 1;
-  end
-  else if EsIzquierda then
-  begin
-    X0 := 2;
+    X0 := 3;
     X1 := TAM_TILE - 1;
   end
   else
   begin
     X0 := 0;
-    X1 := TAM_TILE - 3;
+    X1 := TAM_TILE - 4;
   end;
 
   Result.Barra(X0, 0, X1 - X0 + 1, TAM_TILE, Base);
   if EsIzquierda then
   begin
     Result.Barra(X0, 0, 2, TAM_TILE, Clara);
-    Result.Barra(X0 + 2, 0, 2, TAM_TILE, Aclarar(Base, 20));
-    Result.Barra(X1 - 1, 0, 1, TAM_TILE, Oscurecer(Base, 36));
+    Result.Barra(X0 + 2, 0, 1, TAM_TILE, Aclarar(Base, 18));
+    Result.LineaV(X1, 0, TAM_TILE, Oscurecer(Base, 46));
   end
   else
   begin
-    Result.Barra(X0, 0, X1 - X0 - 5, TAM_TILE, Oscurecer(Base, 12));
-    Result.Barra(X0 + 1, 0, X1 - X0 - 6, TAM_TILE, Base);
-    Result.Barra(X1 - 3, 0, 3, TAM_TILE, Oscurecer(Base, 40));
-    Result.Barra(X0, 0, 1, TAM_TILE, Oscurecer(Base, 36));
+    Result.Barra(X1 - 1, 0, 2, TAM_TILE, Clara);
+    Result.Barra(X1 - 3, 0, 1, TAM_TILE, Aclarar(Base, 18));
+    Result.LineaV(X0, 0, TAM_TILE, Oscurecer(Base, 46));
   end;
+
+  { Dos remaches por tile. }
+  for I := 0 to 1 do
+    if EsIzquierda then
+    begin
+      Result.Barra(X0 + 4, 2 + I * 7, 2, 2, Aclarar(Base, 60));
+      Result.Barra(X0 + 4, 4 + I * 7, 2, 1, Oscurecer(Base, 44));
+    end
+    else
+    begin
+      Result.Barra(X1 - 6, 2 + I * 7, 2, 2, Aclarar(Base, 60));
+      Result.Barra(X1 - 6, 4 + I * 7, 2, 1, Oscurecer(Base, 44));
+    end;
 
   if EsTapa then
   begin
-    { Reborde superior y linea de sombra bajo el labio. }
-    Result.LineaH(X0, 0, X1 - X0 + 1, Aclarar(Clara, 26));
-    Result.LineaH(X0, 1, X1 - X0 + 1, Aclarar(Base, 24));
-    Result.LineaH(X0, 3, X1 - X0 + 1, Oscurecer(Base, 30));
-    Result.LineaH(X0, 4, X1 - X0 + 1, Aclarar(Base, 12));
-    Result.LineaH(X0, TAM_TILE - 1, X1 - X0 + 1, Oscurecer(Base, 44));
+    { Capitel con franjas de aviso y una luz de baliza. }
+    Result.Barra(X0, 0, X1 - X0 + 1, 6, RGBc(56, 48, 40));
+    for I := 0 to 3 do
+    begin
+      Result.Barra(X0 + I * 4, 1, 2, 4, RGBc(230, 188, 62));
+      Result.Barra(X0 + I * 4 + 2, 1, 2, 4, RGBc(70, 58, 38));
+    end;
+    Result.LineaH(X0, 0, X1 - X0 + 1, Aclarar(Clara, 20));
+    Result.LineaH(X0, 6, X1 - X0 + 1, Oscurecer(Base, 34));
+    Result.Barra(X0 + 2, 9, 3, 3, RGBc(186, 224, 246));
+    Result.Barra(X0 + 3, 10, 1, 1, RGBc(250, 252, 255));
   end
   else
-    Result.LineaH(X0, TAM_TILE - 1, X1 - X0 + 1, Oscurecer(Base, 34));
+    Result.LineaH(X0, 0, X1 - X0 + 1, Aclarar(Base, 12));
 end;
 
 function CrearViga(Base: TColor32): TSuperficie;
@@ -521,16 +534,16 @@ begin
   for I := 0 to 2 do
     LiberarSuperficie(Caja[I]);
   LiberarSuperficie(CajaUsada);
-  LiberarSuperficie(TuboTapaIzq);
-  LiberarSuperficie(TuboTapaDer);
-  LiberarSuperficie(TuboCuerpoIzq);
-  LiberarSuperficie(TuboCuerpoDer);
+  LiberarSuperficie(ColumnaTapaIzq);
+  LiberarSuperficie(ColumnaTapaDer);
+  LiberarSuperficie(ColumnaCuerpoIzq);
+  LiberarSuperficie(ColumnaCuerpoDer);
   LiberarSuperficie(Viga);
   inherited Destroy;
 end;
 
 function ConstruirTiles(const Tierra, TierraClara, Ladrillo, LadrilloJunta,
-  Tuberia, TuberiaClara: TColor32): TTiles;
+  Columna, ColumnaClara: TColor32): TTiles;
 var
   I: Integer;
 begin
@@ -540,10 +553,10 @@ begin
   for I := 0 to 2 do
     Result.Caja[I] := CrearCaja(I);
   Result.CajaUsada := CrearCajaUsada(RGBc(150, 108, 66));
-  Result.TuboTapaIzq := CrearTubo(Tuberia, TuberiaClara, True, True);
-  Result.TuboTapaDer := CrearTubo(Tuberia, TuberiaClara, False, True);
-  Result.TuboCuerpoIzq := CrearTubo(Tuberia, TuberiaClara, True, False);
-  Result.TuboCuerpoDer := CrearTubo(Tuberia, TuberiaClara, False, False);
+  Result.ColumnaTapaIzq := CrearColumna(Columna, ColumnaClara, True, True);
+  Result.ColumnaTapaDer := CrearColumna(Columna, ColumnaClara, False, True);
+  Result.ColumnaCuerpoIzq := CrearColumna(Columna, ColumnaClara, True, False);
+  Result.ColumnaCuerpoDer := CrearColumna(Columna, ColumnaClara, False, False);
   Result.Viga := CrearViga(RGBc(96, 104, 128));
 end;
 

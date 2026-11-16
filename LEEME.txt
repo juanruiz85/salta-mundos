@@ -20,9 +20,10 @@ Se puede jugar con teclado en espanol o en ingles, sin configuracion.
 OBJETIVO
 --------
 
-Cada mundo termina en un poste con una bandera. Hay que llegar hasta el
-poste antes de que se acabe el tiempo. Son seis mundos con ambientaciones
-distintas: pradera, atardecer, noche, cueva, desierto y fabrica.
+Cada mundo termina en una compuerta metalica con una baliza. Hay que llegar
+hasta ella antes de que se acabe el tiempo; al tocarla, las hojas se abren y
+comienza el mundo siguiente. Son seis mundos con ambientaciones distintas:
+pradera, atardecer, noche, cueva, desierto y fabrica.
 
   Tuercas doradas   valen 20 puntos y cada 100 dan una vida extra
   Bichos            se eliminan saltando encima
