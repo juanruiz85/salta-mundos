@@ -62,7 +62,7 @@ MS_FOTOGRAMA = 1000 div FPS_OBJETIVO;   { 16 ms }
 
 El paso es fijo en el sentido de que cada vuelta del bucle ejecuta exactamente un paso de simulación, sin delta time ni acumulador. Con 16 ms por fotograma el techo real es de 62,5 fotogramas por segundo, ligeramente por encima de 60. Todas las constantes de física están expresadas por fotograma, no por segundo. Si un fotograma tarda más de lo previsto, el juego se ralentiza en lugar de dar pasos extra.
 
-Hay una particularidad que afecta a la entrada: `Ejecutar` llama a `LeerTeclas` y `Actualizar` la vuelve a llamar al empezar. `LeerTeclas` copia el estado actual a `FTeclasAntes` antes de leer, de modo que la segunda llamada deja `FTeclasAntes` igual a `FTeclas` y `RecienPulsada` no puede detectar un flanco. Las acciones que dependen de un flanco (saltar, pausar, salir al título, empezar la partida) no se disparan en el bucle interactivo; el movimiento sostenido sí funciona. Los modos `--capturar` y `--autoprueba` leen una sola vez por fotograma y no tienen este problema. Véase la sección 12.
+El teclado se lee una sola vez por fotograma: `Ejecutar` no toca la entrada y deja que `Actualizar` llame a `LeerTeclas` al empezar. Esto es importante porque `LeerTeclas` copia el estado vigente a `FTeclasAntes` antes de leer; si el bucle volviera a leer, `FTeclasAntes` quedaría igual a `FTeclas` y `RecienPulsada` no podría detectar ningún flanco, con lo que el salto, la pausa y el cambio de pantalla dejarían de responder. La autoprueba incluye un paso dedicado a vigilar ese camino.
 
 Estados de `TJuego` y sus transiciones:
 
@@ -240,7 +240,7 @@ Todas las constantes están en la interfaz de `GMJuego.pas` y se expresan por fo
 | Constante | Valor | Uso |
 | --- | --- | --- |
 | `GRAVEDAD` | `0.42` | Aceleración vertical normal, en píxeles por fotograma al cuadrado |
-| `GRAVEDAD_SALTO` | `0.23` | Gravedad reducida mientras se mantiene el salto y el héroe sube |
+| `GRAVEDAD_SALTO` | `0.34` | Gravedad reducida mientras se mantiene el salto y el héroe sube |
 | `IMPULSO_SALTO` | `-6.7` | Velocidad vertical inicial del salto, en píxeles por fotograma |
 | `VEL_ANDAR` | `1.7` | Velocidad horizontal máxima al caminar |
 | `VEL_CORRER` | `2.7` | Velocidad horizontal máxima al correr |
@@ -265,7 +265,7 @@ El sprite del héroe mide 16x16, pero la caja de colisión es de 12x15 y se dibu
 9. Avanza la animación de carrera según la velocidad y descuenta la invulnerabilidad.
 10. Recoge tuercas, limita la posición a los bordes del mapa, comprueba la meta y la caída al vacío.
 
-El salto variable no corta la velocidad al soltar: mientras se mantiene la tecla y el héroe sube, la gravedad es menor (`0.23` en lugar de `0.42`), de modo que un toque produce un salto corto y una pulsación mantenida un salto alto. El tiempo de coyote es de 6 fotogramas (unos 100 ms a 60 fps) y el buffer de salto de 8 fotogramas (unos 133 ms); ambos permiten pulsar salto un poco antes o un poco después de tocar el suelo sin perder la acción. La autoprueba exige que el salto máximo quede entre 24 y 80 píxeles.
+El salto variable no corta la velocidad al soltar: mientras se mantiene la tecla y el héroe sube, la gravedad es menor (`0.34` en lugar de `0.42`), de modo que un toque produce un salto corto y una pulsación mantenida un salto alto. El tiempo de coyote es de 6 fotogramas (unos 100 ms a 60 fps) y el buffer de salto de 8 fotogramas (unos 133 ms); ambos permiten pulsar salto un poco antes o un poco después de tocar el suelo sin perder la acción. La autoprueba exige que el salto máximo quede entre 24 y 80 píxeles.
 
 El escudo cambia el daño: `HerirHeroe` ignora el golpe si hay invulnerabilidad, consume el escudo si lo hay y otorga 90 fotogramas de invulnerabilidad con partículas azules, o mata al héroe si no hay escudo. La muerte fija una velocidad vertical de `-5.4`, detiene la música y entra en `ejMuere`.
 
@@ -335,8 +335,12 @@ La autoprueba se ejecuta con `--autoprueba` o `--selftest`. El `.dpr` crea `TJue
 4. Pared: se construye un muro de cuatro columnas por tres filas, se corre a la derecha 90 fotogramas y el héroe no debe atravesarlo ni quedarse sin avanzar.
 5. Partida automática: 2400 fotogramas corriendo a la derecha y saltando cinco de cada treinta deben recoger al menos una tuerca y avanzar más de 96 píxeles.
 6. Dibujo: se cargan los seis niveles, se simulan tres fotogramas en cada uno y se llama a `Dibujar` sin ventana.
+7. Fin de nivel: se coloca al héroe sobre el poste, se comprueba que el estado pasa a `ejFinNivel` y que tras 140 fotogramas el juego avanza al mundo 2.
+8. Muerte: se deja caer al héroe fuera del mapa, se comprueba que entra en `ejMuere` y que tras 130 fotogramas pierde una vida y reanuda la partida.
+9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar al poste en los seis mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
+10. Entrada por flanco: pulsando salto un solo fotograma, el héroe debe despegar del suelo; pulsando avance, su velocidad horizontal debe dejar de ser cero.
 
-El paso 1 mide el ancho en tiles (`Nivel.Ancho`), no en píxeles. El paso 5 no exige terminar el nivel: comprueba que el bucle de juego, la recogida de tuercas y el avance funcionan juntos. El paso 6 no tiene aserciones; su valor es que cualquier excepción de dibujo hace fallar la ejecución.
+El paso 1 mide el ancho en tiles (`Nivel.Ancho`), no en píxeles. El paso 5 no exige terminar el nivel: comprueba que el bucle de juego, la recogida de tuercas y el avance funcionan juntos. El paso 6 no tiene aserciones; su valor es que cualquier excepción de dibujo hace fallar la ejecución. El paso 9 usa `FMortalInactivo` para desactivar el daño de los enemigos, de modo que mide la geometría del nivel y no la puntería del bot.
 
 Cada paso escribe una línea en `salta-mundos.log`, junto al ejecutable, y en la salida estándar. Al final se registra `RESULTADO: OK` o `RESULTADO: FALLO` con el detalle de las fallas. Si se produce una excepción no controlada, el bloque `try` del `.dpr` la registra y termina con código 2.
 

@@ -25,7 +25,7 @@ type
 
 const
   GRAVEDAD = 0.42;
-  GRAVEDAD_SALTO = 0.23;
+  GRAVEDAD_SALTO = 0.34;
   IMPULSO_SALTO = -6.7;
   VEL_ANDAR = 1.7;
   VEL_CORRER = 2.7;
@@ -114,6 +114,8 @@ type
     FSimulacion: Boolean;
     FTeclasSimuladas: TPulsos;
     FBotActivo: Boolean;
+    FBotSalto: Integer;
+    FMortalInactivo: Boolean;
 
     procedure LeerTeclas;
     function Pulsada(Tecla: Char): Boolean;
@@ -194,6 +196,7 @@ type
     procedure Capturar(const Carpeta: string);
     procedure GuardarMapas(const Carpeta: string);
     function AutoPrueba: Boolean;
+    procedure PulsosDelBot(var P: TPulsos);
     procedure Actualizar;
     procedure DibujarCuadro;
     procedure EmpezarEnNivel(Numero: Integer);
@@ -293,6 +296,8 @@ begin
   FMuerto := False;
   FSimulacion := False;
   FBotActivo := False;
+  FBotSalto := 0;
+  FMortalInactivo := False;
   FTeclasSimuladas := Default(TPulsos);
   FTiempo := 300;
   FillChar(FTeclas, SizeOf(FTeclas), 0);
@@ -739,6 +744,8 @@ end;
 
 procedure TJuego.HerirHeroe(DesdeX: Single);
 begin
+  if FMortalInactivo then
+    Exit;
   if FHeroeInvulnerable > 0 then
     Exit;
   if FHeroeReforzado then
@@ -1825,6 +1832,50 @@ begin
   end;
 end;
 
+{ ----------------------------- bot de prueba ----------------------------- }
+
+procedure TJuego.PulsosDelBot(var P: TPulsos);
+var
+  I: Integer;
+  E: TEntidad;
+  ColPie, FilaPie: Integer;
+  NecesitaSalto: Boolean;
+begin
+  FillChar(P, SizeOf(P), 0);
+  P.Derecha := True;
+  P.Correr := True;
+  NecesitaSalto := False;
+
+  ColPie := Floor((FHeroeX + HEROE_ANCHO + 6) / TAM_TILE);
+  FilaPie := Floor((FHeroeY + HEROE_ALTO - 2) / TAM_TILE);
+
+  { Pared delante. }
+  if SolidoEn(ColPie, FilaPie) or SolidoEn(ColPie, FilaPie - 1) then
+    NecesitaSalto := True;
+
+  { Borde de plataforma: se mira la casilla del pie y la siguiente. }
+  if FHeroeEnSuelo then
+    if (not SolidoEn(ColPie, FilaPie + 1)) or (not SolidoEn(ColPie + 1, FilaPie + 1)) then
+      NecesitaSalto := True;
+
+  { Enemigo cerca: se salta antes para pasar por encima. }
+  for I := 0 to FEntidades.Count - 1 do
+  begin
+    E := TEntidad(FEntidades[I]);
+    if (E.Tipo in [teBicho, tePua, teMosca]) and E.Viva then
+      if (E.X > FHeroeX) and (E.X - FHeroeX < 40) and (Abs(E.Y - FHeroeY) < 26) then
+        NecesitaSalto := True;
+  end;
+
+  if NecesitaSalto and (FHeroeEnSuelo or (FCoyote > 0)) then
+    FBotSalto := 12;
+  if FBotSalto > 0 then
+  begin
+    P.Salto := True;
+    Dec(FBotSalto);
+  end;
+end;
+
 { ----------------------------- auto prueba ----------------------------- }
 
 function TJuego.AutoPrueba: Boolean;
@@ -2004,7 +2055,34 @@ begin
   Comprobar(FVidas <> 2, 'la muerte no descuenta una vida');
   Comprobar(FEstado <> ejJugando, 'el juego no reanuda tras la muerte');
 
-  Registrar('Paso 9: entrada por flanco');
+  { Recorrido completo de los seis mundos con los enemigos desactivados:
+    comprueba que no hay paredes ni huecos imposibles de salvar. }
+  Registrar('Paso 9: los seis mundos se pueden recorrer');
+  FMortalInactivo := True;
+  for Numero := 1 to TOTAL_NIVELES do
+  begin
+    CargarNivel(Numero);
+    FEstado := ejJugando;
+    FVidas := 99;
+    FBotSalto := 0;
+    for I := 1 to 4000 do
+    begin
+      if FEstado = ejFinNivel then
+        Break;
+      PulsosDelBot(P);
+      DarPulsos(P);
+      Actualizar;
+    end;
+    if FEstado <> ejFinNivel then
+      Registrar('  mundo ' + IntToStr(Numero) + ' detenido en x=' +
+        IntToStr(Round(FHeroeX)) + ' de ' + IntToStr(FAnchoMapa * TAM_TILE) +
+        ' estado=' + IntToStr(Ord(FEstado)));
+    Comprobar(FEstado <> ejFinNivel,
+      'el recorrido no llega al final del mundo ' + IntToStr(Numero));
+  end;
+  FMortalInactivo := False;
+
+  Registrar('Paso 10: entrada por flanco');
   CargarNivel(1);
   FEstado := ejJugando;
   FillChar(P, SizeOf(P), 0);

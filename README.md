@@ -140,7 +140,7 @@ La captura de portada se publica en `docs/capturas/titulo.png`; la carpeta se cr
 
 ## Pruebas
 
-La autoprueba interna valida la estructura de los seis niveles (ancho mínimo, un único punto de inicio y un único poste de meta), la física en reposo y en salto, las colisiones contra paredes, una partida automática de 2400 fotogramas y el dibujo de los seis niveles sin ventana. Cada comprobación recibe la condición de error y el resultado se escribe en `salta-mundos.log`, junto al ejecutable, y en la salida estándar.
+La autoprueba interna valida la estructura de los seis niveles (ancho mínimo, un único punto de inicio y un único poste de meta), la física en reposo y en salto, las colisiones contra paredes, una partida automática de 2400 fotogramas, el dibujo de los seis niveles sin ventana, el final de nivel con su paso al mundo siguiente, la muerte con descuento de vida y un recorrido completo con un bot que comprueba que ningún hueco ni pared impide terminar cada mundo. Cada comprobación recibe la condición de error y el resultado se escribe en `salta-mundos.log`, junto al ejecutable, y en la salida estándar.
 
 ```
 build\SaltaMundos.exe --autoprueba
