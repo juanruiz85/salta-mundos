@@ -1,0 +1,17 @@
+# Archivos generados por la compilacion
+build/
+dist/
+paquete/
+*.exe
+*.o
+*.ppu
+*.a
+*.res
+*.log
+
+# Archivos temporales de las herramientas
+*.bmp
+*.tmp
+*.bak
+Thumbs.db
+desktop.ini
