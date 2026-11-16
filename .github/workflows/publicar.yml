@@ -1,0 +1,53 @@
+name: Publicar version
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    name: Compilar y publicar el zip
+    runs-on: windows-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Free Pascal
+        shell: pwsh
+        run: ./scripts/instalar-fpc.ps1
+
+      - name: Compilar el juego
+        shell: pwsh
+        run: ./build.ps1 -OutDir dist
+
+      - name: Ejecutar la autoprueba
+        shell: pwsh
+        run: |
+          $proceso = Start-Process -FilePath 'dist\SaltaMundos.exe' -ArgumentList '--autoprueba' -Wait -PassThru
+          if (Test-Path 'dist\salta-mundos.log') { Get-Content 'dist\salta-mundos.log' }
+          if ($proceso.ExitCode -ne 0) { throw "La autoprueba fallo con codigo $($proceso.ExitCode)" }
+
+      - name: Preparar el paquete
+        shell: pwsh
+        run: |
+          $carpeta = 'paquete'
+          New-Item -ItemType Directory -Force -Path $carpeta | Out-Null
+          Copy-Item 'dist\SaltaMundos.exe' $carpeta
+          Copy-Item 'LEEME.txt' $carpeta
+          Copy-Item 'LICENSE' (Join-Path $carpeta 'LICENCIA.txt')
+          $zip = "SaltaMundos-$env:GITHUB_REF_NAME-win64.zip"
+          Compress-Archive -Path "$carpeta\*" -DestinationPath $zip -Force
+          Get-Item $zip | Select-Object Name, Length
+
+      - name: Crear el release con el binario
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $zip = "SaltaMundos-$env:GITHUB_REF_NAME-win64.zip"
+          $titulo = "Salta Mundos $env:GITHUB_REF_NAME"
+          gh release create $env:GITHUB_REF_NAME $zip --title $titulo --notes-file docs/NOTAS-VERSION.md

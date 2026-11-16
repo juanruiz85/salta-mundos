@@ -1,0 +1,37 @@
+name: Compilar y probar
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  compilar:
+    name: Compilar en Windows
+    runs-on: windows-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Free Pascal
+        shell: pwsh
+        run: ./scripts/instalar-fpc.ps1
+
+      - name: Compilar el juego
+        shell: pwsh
+        run: ./build.ps1 -OutDir dist
+
+      - name: Ejecutar la autoprueba
+        shell: pwsh
+        run: |
+          $proceso = Start-Process -FilePath 'dist\SaltaMundos.exe' -ArgumentList '--autoprueba' -Wait -PassThru
+          if (Test-Path 'dist\salta-mundos.log') { Get-Content 'dist\salta-mundos.log' }
+          if ($proceso.ExitCode -ne 0) { throw "La autoprueba fallo con codigo $($proceso.ExitCode)" }
+
+      - name: Guardar el ejecutable
+        uses: actions/upload-artifact@v4
+        with:
+          name: SaltaMundos-win64
+          path: dist/SaltaMundos.exe
+          if-no-files-found: error

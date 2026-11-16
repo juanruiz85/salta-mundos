@@ -1,0 +1,59 @@
+SALTA MUNDOS
+============
+
+Juego de plataformas por mundos, escrito en Object Pascal (modo Delphi) y
+compilado con Free Pascal para Windows de 64 bits.
+
+COMO JUGAR
+----------
+
+Descomprima el archivo zip y ejecute SaltaMundos.exe.
+
+  Flechas izquierda y derecha   mover
+  Flecha arriba, W, Z o espacio saltar
+  Shift o X                     correr
+  P                             pausa
+  Escape                        volver al titulo
+
+Se puede jugar con teclado en espanol o en ingles, sin configuracion.
+
+OBJETIVO
+--------
+
+Cada mundo termina en un poste con una bandera. Hay que llegar hasta el
+poste antes de que se acabe el tiempo. Son seis mundos con ambientaciones
+distintas: pradera, atardecer, noche, cueva, desierto y fabrica.
+
+  Tuercas doradas   valen 20 puntos y cada 100 dan una vida extra
+  Bichos            se eliminan saltando encima
+  Puas              no se pueden pisar, hay que esquivarlas
+  Moscas            vuelan en zigzag y tambien se pisan
+  Escudo            protege de un golpe y permite romper ladrillos
+  Cajas con simbolo se abren desde abajo y entregan tuercas o escudos
+
+REQUISITOS
+----------
+
+Windows de 64 bits. El ejecutable no necesita instalacion ni archivos
+adicionales: los graficos, la musica y los niveles estan dentro del binario.
+
+COMPILAR
+--------
+
+El codigo fuente esta en la carpeta src. Con Free Pascal 3.2.2 o superior:
+
+  ppcrossx64.exe -Mdelphi -O2 -Sh -Fu src -FE build -FU build\units src\SaltaMundos.dpr
+
+En el repositorio tambien hay un script build.ps1 que hace lo mismo y deja el
+ejecutable en la carpeta dist.
+
+LICENCIA
+--------
+
+MIT. Consulte LICENCIA.txt.
+
+CREDITOS
+--------
+
+Programado por Juan Ruiz. Es un homenaje a los juegos de plataformas de la
+epoca de Turbo Pascal; el codigo, los graficos y la musica son propios.
