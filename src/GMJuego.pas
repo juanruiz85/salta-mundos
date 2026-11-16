@@ -1967,7 +1967,44 @@ begin
   Comprobar(FHeroeX < 6 * TAM_TILE, 'el heroe no avanzo al comenzar la partida');
 
   Registrar('Paso 6: dibujo');
-  Registrar('Paso 7: entrada por flanco');
+  Registrar('Paso 7: fin de nivel y siguiente mundo');
+  CargarNivel(1);
+  FEstado := ejJugando;
+  Col := 0;
+  Fila := 0;
+  for I := 0 to FAnchoMapa - 1 do
+    if FMapa[8][I + 1] = 'E' then
+      Col := I;
+  FHeroeX := Col * TAM_TILE;
+  FHeroeY := 8 * TAM_TILE;
+  FillChar(P, SizeOf(P), 0);
+  DarPulsos(P);
+  Actualizar;
+  Comprobar(FEstado <> ejFinNivel, 'tocar el poste no termina el nivel');
+  for I := 1 to 140 do
+  begin
+    DarPulsos(P);
+    Actualizar;
+  end;
+  Comprobar(FNivelActual <> 2, 'el juego no avanza al segundo mundo');
+
+  Registrar('Paso 8: muerte y reinicio del nivel');
+  CargarNivel(1);
+  FEstado := ejJugando;
+  FVidas := 3;
+  FHeroeY := ALTO_MUNDO + 60;
+  DarPulsos(P);
+  Actualizar;
+  Comprobar(FEstado <> ejMuere, 'caer al vacio no mata al heroe');
+  for I := 1 to 130 do
+  begin
+    DarPulsos(P);
+    Actualizar;
+  end;
+  Comprobar(FVidas <> 2, 'la muerte no descuenta una vida');
+  Comprobar(FEstado <> ejJugando, 'el juego no reanuda tras la muerte');
+
+  Registrar('Paso 9: entrada por flanco');
   CargarNivel(1);
   FEstado := ejJugando;
   FillChar(P, SizeOf(P), 0);
