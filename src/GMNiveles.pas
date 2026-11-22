@@ -1,5 +1,5 @@
 unit GMNiveles;
-{ Definicion de los seis niveles. Cada nivel se arma encadenando piezas de
+{ Definicion de los diez niveles. Cada nivel se arma encadenando piezas de
   16 columnas por 11 filas, de modo que el mapa se lee como un dibujo y se
   puede editar sin contar caracteres a mano.
 
@@ -67,7 +67,7 @@ type
   end;
 
 const
-  TOTAL_NIVELES = 6;
+  TOTAL_NIVELES = 10;
 
 function TemaDeNivel(Numero: Integer): TTema;
 function NombreNivel(Numero: Integer): string;
@@ -83,7 +83,7 @@ type
   end;
 
 const
-  PIEZAS: array[0..12] of TPieza = (
+  PIEZAS: array[0..17] of TPieza = (
     (Nombre: 'inicio';
      Filas: (
       '                ',
@@ -252,6 +252,71 @@ const
       '                ',
       '            E   ',
       '================',
+      '================')),
+    (Nombre: 'cajas';
+     Filas: (
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '   B?B?B        ',
+      '                ',
+      '                ',
+      '    c      c    ',
+      '================',
+      '================')),
+    (Nombre: 'pasillo';
+     Filas: (
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '   BBBBBBBB     ',
+      '                ',
+      '     c    c     ',
+      '================',
+      '================')),
+    (Nombre: 'plataformas_altas';
+     Filas: (
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '    ####        ',
+      '        ####    ',
+      '  c          c  ',
+      '================',
+      '================')),
+    (Nombre: 'puas';
+     Filas: (
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '      c         ',
+      '    s     s     ',
+      '================',
+      '================')),
+    (Nombre: 'columnas';
+     Filas: (
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '                ',
+      '    []   []     ',
+      '    []   []     ',
+      '================',
       '================'))
   );
 
@@ -284,6 +349,8 @@ end;
 
 function EsSolido(Caracter: Char): Boolean;
 begin
+  { La compuerta de salida no es solida: se resuelve como una zona de
+    contacto que ocupa toda su altura. }
   Result := Caracter in ['=', 'B', '?', 'U', '#', '[', ']'];
 end;
 
@@ -375,22 +442,90 @@ begin
         Result.Estrellas := False;
         Result.Astro := RGBc(255, 250, 220);
       end;
+    6:
+      begin
+        Result.Nombre := 'FABRICA';
+        Result.CieloArriba := RGBc(30, 34, 46);
+        Result.CieloAbajo := RGBc(74, 82, 102);
+        Result.ColinaLejos := RGBc(60, 66, 84);
+        Result.ColinaCerca := RGBc(40, 46, 62);
+        Result.Tierra := RGBc(98, 102, 118);
+        Result.TierraClara := RGBc(146, 152, 174);
+        Result.Ladrillo := RGBc(152, 112, 82);
+        Result.LadrilloJunta := RGBc(70, 50, 36);
+        Result.Columna := RGBc(142, 148, 166);
+        Result.ColumnaClara := RGBc(208, 214, 232);
+        Result.Nube := RGBc(96, 104, 122);
+        Result.Estrellas := False;
+        Result.Astro := RGBc(255, 214, 140);
+      end;
+    7:
+      begin
+        Result.Nombre := 'BOSQUE';
+        Result.CieloArriba := RGBc(88, 148, 118);
+        Result.CieloAbajo := RGBc(186, 214, 178);
+        Result.ColinaLejos := RGBc(72, 112, 84);
+        Result.ColinaCerca := RGBc(44, 78, 58);
+        Result.Tierra := RGBc(92, 70, 46);
+        Result.TierraClara := RGBc(82, 148, 86);
+        Result.Ladrillo := RGBc(116, 86, 58);
+        Result.LadrilloJunta := RGBc(54, 38, 26);
+        Result.Columna := RGBc(108, 96, 80);
+        Result.ColumnaClara := RGBc(168, 152, 130);
+        Result.Nube := RGBc(226, 240, 222);
+        Result.Estrellas := False;
+        Result.Astro := RGBc(238, 246, 200);
+      end;
+    8:
+      begin
+        Result.Nombre := 'VOLCAN';
+        Result.CieloArriba := RGBc(62, 24, 28);
+        Result.CieloAbajo := RGBc(186, 78, 44);
+        Result.ColinaLejos := RGBc(62, 32, 36);
+        Result.ColinaCerca := RGBc(38, 20, 26);
+        Result.Tierra := RGBc(72, 52, 56);
+        Result.TierraClara := RGBc(122, 62, 54);
+        Result.Ladrillo := RGBc(98, 54, 50);
+        Result.LadrilloJunta := RGBc(42, 20, 22);
+        Result.Columna := RGBc(72, 66, 74);
+        Result.ColumnaClara := RGBc(142, 134, 144);
+        Result.Nube := RGBc(92, 60, 60);
+        Result.Estrellas := False;
+        Result.Astro := RGBc(255, 150, 90);
+      end;
+    9:
+      begin
+        Result.Nombre := 'HIELO';
+        Result.CieloArriba := RGBc(118, 168, 220);
+        Result.CieloAbajo := RGBc(226, 244, 255);
+        Result.ColinaLejos := RGBc(152, 190, 220);
+        Result.ColinaCerca := RGBc(206, 232, 250);
+        Result.Tierra := RGBc(150, 180, 200);
+        Result.TierraClara := RGBc(232, 248, 255);
+        Result.Ladrillo := RGBc(130, 168, 196);
+        Result.LadrilloJunta := RGBc(70, 100, 128);
+        Result.Columna := RGBc(140, 160, 180);
+        Result.ColumnaClara := RGBc(214, 232, 246);
+        Result.Nube := RGBc(250, 254, 255);
+        Result.Estrellas := False;
+        Result.Astro := RGBc(255, 255, 240);
+      end;
   else
     begin
-      Result.Nombre := 'FABRICA';
-      Result.CieloArriba := RGBc(30, 34, 46);
-      Result.CieloAbajo := RGBc(74, 82, 102);
-      Result.ColinaLejos := RGBc(60, 66, 84);
-      Result.ColinaCerca := RGBc(40, 46, 62);
-      Result.Tierra := RGBc(98, 102, 118);
-      Result.TierraClara := RGBc(146, 152, 174);
-      Result.Ladrillo := RGBc(152, 112, 82);
-      Result.LadrilloJunta := RGBc(70, 50, 36);
-      Result.Columna := RGBc(142, 148, 166);
-      Result.ColumnaClara := RGBc(208, 214, 232);
-      Result.Nube := RGBc(96, 104, 122);
-      Result.Estrellas := False;
-      Result.Astro := RGBc(255, 214, 140);
+      Result.Nombre := 'ESPACIO';
+      Result.CieloArriba := RGBc(10, 10, 26);
+      Result.CieloAbajo := RGBc(48, 30, 76);
+      Result.ColinaLejos := RGBc(38, 28, 64);
+      Result.ColinaCerca := RGBc(26, 18, 48);
+      Result.Tierra := RGBc(58, 50, 86);
+      Result.TierraClara := RGBc(108, 96, 150);
+      Result.Ladrillo := RGBc(86, 70, 120);
+      Result.LadrilloJunta := RGBc(38, 28, 58);
+      Result.Columna := RGBc(110, 100, 140);
+      Result.ColumnaClara := RGBc(180, 170, 210);
+      Result.Nube := RGBc(60, 50, 90);
+      Result.Estrellas := True;
+      Result.Astro := RGBc(220, 210, 255);
     end;
   end;
 end;
@@ -560,24 +695,99 @@ begin
         AgregarPorNombre(Result, 'hueco_bricks');
         AgregarPorNombre(Result, 'final');
       end;
+    6:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'columna_alta');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'plataformas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'bloques');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'columna');
+        AgregarPorNombre(Result, 'plataformas');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'final');
+      end;
+    7:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'piso_monedas');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'final');
+      end;
+    8:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'bloques');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'piso_monedas');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'final');
+      end;
+    9:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'columna_alta');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'final');
+      end;
   else
     begin
       AgregarPorNombre(Result, 'inicio');
       AgregarPorNombre(Result, 'enemigos');
-      AgregarPorNombre(Result, 'columna_alta');
       AgregarPorNombre(Result, 'hueco');
-      AgregarPorNombre(Result, 'plataformas');
       AgregarPorNombre(Result, 'mosca');
-      AgregarPorNombre(Result, 'bicho_pua');
       AgregarPorNombre(Result, 'bloques');
-      AgregarPorNombre(Result, 'hueco_bricks');
+      AgregarPorNombre(Result, 'hueco');
+      AgregarPorNombre(Result, 'puas');
+      AgregarPorNombre(Result, 'plataformas_altas');
+      AgregarPorNombre(Result, 'cajas');
+      AgregarPorNombre(Result, 'columna_alta');
       AgregarPorNombre(Result, 'enemigos');
-      AgregarPorNombre(Result, 'mosca');
-      AgregarPorNombre(Result, 'columna');
-      AgregarPorNombre(Result, 'plataformas');
+      AgregarPorNombre(Result, 'pasillo');
+      AgregarPorNombre(Result, 'hueco_bricks');
       AgregarPorNombre(Result, 'bicho_pua');
       AgregarPorNombre(Result, 'escalera');
-      AgregarPorNombre(Result, 'hueco');
+      AgregarPorNombre(Result, 'mosca');
       AgregarPorNombre(Result, 'final');
     end;
   end;

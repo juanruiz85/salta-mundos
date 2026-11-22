@@ -16,7 +16,7 @@ El programa se divide en siete units y un `.dpr`. Cada unit tiene una responsabi
 | `GMSuperficie.pas` | Superficie de píxeles de 32 bits, primitivas de dibujo, fuente 5x7 y exportación BMP | `TSuperficie` |
 | `GMVentana.pas` | Ventana Win32, DIB section, lectura de teclado y reloj de fotogramas | `TVentana`, `TPulsos` |
 | `GMSprites.pas` | Paleta, sprites por mapas de caracteres y tiles generados | `TPaleta`, `TTiles`, `TSpritesHeroe`, `TSpritesEnemigos`, `TSpritesObjetos` |
-| `GMNiveles.pas` | Temas visuales, piezas de mapa y ensamblado de los seis niveles | `TTema`, `TNivel`, `CrearNivel` |
+| `GMNiveles.pas` | Temas visuales, piezas de mapa y ensamblado de los diez niveles | `TTema`, `TNivel`, `CrearNivel` |
 | `GMSonido.pas` | Sintetizador de música y efectos sobre waveOut | `TSonido`, `TMezclador`, `THiloAudio` |
 | `GMJuego.pas` | Estados, física, colisiones, cámara, marcador y dibujo | `TJuego`, `TEntidad`, `TParticula` |
 | `SaltaMundos.dpr` | Punto de entrada, selección de modo y códigos de salida | `Principal` |
@@ -74,7 +74,7 @@ Estados de `TJuego` y sus transiciones:
 | `ejMuere` | Contacto con enemigo sin escudo, caída o tiempo agotado | 96 fotogramas después: resta vida y reinicia el nivel o pasa a `ejGameOver` |
 | `ejFinNivel` | Tocar la compuerta de salida | 130 fotogramas después: siguiente nivel o `ejVictoria` |
 | `ejGameOver` | Última vida perdida | Enter tras 40 fotogramas: título |
-| `ejVictoria` | Terminar el nivel 6 | Enter tras 40 fotogramas: título |
+| `ejVictoria` | Terminar el nivel 10 | Enter tras 40 fotogramas: título |
 
 La tabla describe las transiciones programadas en `TJuego.Actualizar`; en el bucle interactivo actual las que dependen de un flanco de teclado no llegan a dispararse por la lectura duplicada descrita en el párrafo anterior.
 
@@ -205,11 +205,11 @@ Leyenda de caracteres:
 | `s` | Púa giratoria | No |
 | `f` | Mosca voladora | No |
 | `M` | Posición inicial del héroe | No |
-| `E` | Compuerta de salida (dos columnas, cuatro filas) | No |
+| `E` | Compuerta de salida (dos columnas, seis filas) | No |
 
 `EsSolido` reconoce `=`, `B`, `?`, `U`, `#`, `[` y `]`. Fuera del mapa, `TNivel.Caracter` devuelve `'='` por debajo de la última fila y `' '` por arriba o a los costados; el motor de juego, en cambio, trata los costados como sólidos en `SolidoEn` para que nadie salga del escenario.
 
-Hay trece piezas con nombre (`inicio`, `piso`, `piso_monedas`, `hueco`, `hueco_bricks`, `bloques`, `escalera`, `columna`, `columna_alta`, `plataformas`, `enemigos`, `bicho_pua`, `final`) y una pieza adicional, `mosca`, que se agrega con `AgregarPorNombre` sin estar en la tabla. Cada nivel encadena entre 14 y 17 piezas:
+Hay dieciocho piezas con nombre (`inicio`, `piso`, `piso_monedas`, `hueco`, `hueco_bricks`, `bloques`, `escalera`, `columna`, `columna_alta`, `plataformas`, `enemigos`, `bicho_pua`, `final`, `cajas`, `pasillo`, `plataformas_altas`, `puas`, `columnas`) y una pieza adicional, `mosca`, que se agrega con `AgregarPorNombre` sin estar en la tabla. Cada nivel encadena entre 14 y 17 piezas:
 
 | Nivel | Tema | Piezas | Columnas | Ancho en píxeles |
 | --- | --- | --- | --- | --- |
@@ -219,6 +219,10 @@ Hay trece piezas con nombre (`inicio`, `piso`, `piso_monedas`, `hueco`, `hueco_b
 | 4 | Cueva | 14 | 224 | 3584 |
 | 5 | Desierto | 15 | 240 | 3840 |
 | 6 | Fábrica | 17 | 272 | 4352 |
+| 7 | Bosque | 14 | 224 | 3584 |
+| 8 | Volcán | 16 | 256 | 4096 |
+| 9 | Hielo | 16 | 256 | 4096 |
+| 10 | Espacio | 17 | 272 | 4352 |
 
 Temas visuales de `TemaDeNivel`:
 
@@ -230,6 +234,10 @@ Temas visuales de `TemaDeNivel`:
 | 4 | Cueva | `#12101C` a `#2E283A` | Sí |
 | 5 | Desierto | `#F4C46C` a `#FCEEC4` | No |
 | 6 | Fábrica | `#1E222E` a `#4A5266` | No |
+| 7 | Bosque | `#589478` a `#BAD6B2` | No |
+| 8 | Volcán | `#3E181C` a `#BA4E2C` | No |
+| 9 | Hielo | `#76A8DC` a `#E2F4FF` | No |
+| 10 | Espacio | `#0A0A1A` a `#301E4C` | Sí |
 
 Al cargar un nivel, `CargarNivel` copia las filas a `FMapa`, reconstruye los tiles, borra entidades y llama a `SembrarEntidades`, que convierte las `g`, `s` y `f` en objetos `TEntidad` y borra esos caracteres del mapa. La `M` se usa para colocar al héroe en `columna * 16 + 2` y `fila * 16 + 1`, y también se borra. La `c` y la `E` permanecen como tiles y se dibujan o se consultan en cada fotograma.
 
@@ -329,15 +337,15 @@ La autoprueba se ejecuta con `--autoprueba` o `--selftest`. El `.dpr` crea `TJue
 
 `AutoPrueba` activa `FSimulacion` y alimenta el motor con `DarPulsos`, que sustituye la lectura real del teclado por un `TPulsos` armado a mano. Cada comprobación se declara con `Comprobar(Condicion, Descripcion)`, donde `Condicion` es la condición de error: si es verdadera, se agrega una línea `FALLA: ...` a la lista. Los pasos son:
 
-1. Estructura de los seis niveles: ancho de al menos 100 columnas, exactamente una `M` y exactamente una `E` por nivel.
+1. Estructura de los diez niveles: ancho de al menos 100 columnas, exactamente una `M` y exactamente una `E` por nivel.
 2. Física en reposo: 40 fotogramas sin entrada deben dejar al héroe sobre el suelo, y 30 fotogramas más no deben moverlo más de 1,5 píxeles.
 3. Salto: con salto pulsado, la altura máxima debe quedar entre 24 y 80 píxeles y el héroe debe volver al suelo con un margen de 2 píxeles.
 4. Pared: se construye un muro de cuatro columnas por tres filas, se corre a la derecha 90 fotogramas y el héroe no debe atravesarlo ni quedarse sin avanzar.
 5. Partida automática: 2400 fotogramas corriendo a la derecha y saltando cinco de cada treinta deben recoger al menos una tuerca y avanzar más de 96 píxeles.
-6. Dibujo: se cargan los seis niveles, se simulan tres fotogramas en cada uno y se llama a `Dibujar` sin ventana.
+6. Dibujo: se cargan los diez niveles, se simulan tres fotogramas en cada uno y se llama a `Dibujar` sin ventana.
 7. Fin de nivel: se coloca al héroe junto a la compuerta, se comprueba que el estado pasa a `ejFinNivel`, que las hojas se abren y que tras 140 fotogramas el juego avanza al mundo 2.
 8. Muerte: se deja caer al héroe fuera del mapa, se comprueba que entra en `ejMuere` y que tras 130 fotogramas pierde una vida y reanuda la partida.
-9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar a la compuerta en los seis mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
+9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar a la compuerta en los diez mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
 10. Entrada por flanco: pulsando salto un solo fotograma, el héroe debe despegar del suelo; pulsando avance, su velocidad horizontal debe dejar de ser cero.
 
 El paso 1 mide el ancho en tiles (`Nivel.Ancho`), no en píxeles. El paso 5 no exige terminar el nivel: comprueba que el bucle de juego, la recogida de tuercas y el avance funcionan juntos. El paso 6 no tiene aserciones; su valor es que cualquier excepción de dibujo hace fallar la ejecución. El paso 9 usa `FMortalInactivo` para desactivar el daño de los enemigos, de modo que mide la geometría del nivel y no la puntería del bot.

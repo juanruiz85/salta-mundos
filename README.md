@@ -1,14 +1,14 @@
 # Salta Mundos
 
-Juego de plataformas 2D de seis niveles, escrito en Object Pascal (modo Delphi) y compilado con Free Pascal para Windows de 64 bits.
+Juego de plataformas 2D de diez niveles, escrito en Object Pascal (modo Delphi) y compilado con Free Pascal para Windows de 64 bits.
 
-Versión 1.0.0 · 16 de noviembre de 2026
+Versión 1.1.0 · 22 de noviembre de 2026
 
 ![Pantalla de título de Salta Mundos](docs/capturas/titulo.png)
 
 ## Qué es
 
-Salta Mundos es un juego de plataformas de desplazamiento lateral que se recorre de principio a fin en seis niveles, cada uno con un tema visual propio: pradera, atardecer, noche, cueva, desierto y fábrica. En cada nivel hay que alcanzar la compuerta de salida antes de que se agote el tiempo, recogiendo tuercas doradas y esquivando o pisando enemigos.
+Salta Mundos es un juego de plataformas de desplazamiento lateral que se recorre de principio a fin en diez niveles, cada uno con un tema visual propio: pradera, atardecer, noche, cueva, desierto, fábrica, bosque, volcán, hielo y espacio. En cada nivel hay que alcanzar la compuerta de salida antes de que se agote el tiempo, recogiendo tuercas doradas y esquivando o pisando enemigos.
 
 Todo el juego se dibuja a 320x200 píxeles y se escala a la ventana con un múltiplo entero, sin filtros, para conservar el aspecto de pixel art. No se carga ningún archivo de imagen, sonido o mapa: los sprites y los tiles se generan por código, la música y los efectos se sintetizan en tiempo real y los niveles están descritos dentro del ejecutable.
 
@@ -22,7 +22,7 @@ El marcador rotula MUNDO a cada nivel; en este documento se usa «nivel» para r
 - Sprites y tiles generados por código, sin archivos de imagen.
 - Música y efectos sintetizados con waveOut a 22050 Hz, mono y 16 bits.
 - Sin archivos de datos externos: gráficos, sonido y niveles viajan dentro del ejecutable.
-- Seis niveles con paletas, cielos, colinas y decorados propios.
+- Diez niveles con paletas, cielos, colinas y decorados propios.
 - Salto de altura variable, tiempo de coyote y buffer de salto para un control preciso.
 - Autoprueba integrada que se ejecuta sin abrir ventana.
 - Compilación reproducible con Free Pascal y publicación automática desde GitHub Actions.
@@ -50,7 +50,7 @@ Las teclas de letras se leen por código de tecla, no por carácter, así que fu
 - Los ladrillos solo se rompen golpeándolos desde abajo con escudo.
 - Las cajas con sorpresa se abren desde abajo: entregan tuercas y, cada cuatro cajas golpeadas sin llevar escudo, entregan un escudo.
 - Se pierde una vida al tocar un enemigo sin escudo, al caer al vacío o al agotar el tiempo.
-- El nivel termina al tocar la compuerta de salida: las dos hojas se abren y el juego pasa al mundo siguiente. Tras el sexto nivel aparece la pantalla de victoria.
+- El nivel termina al tocar la compuerta de salida: las dos hojas se abren y el juego pasa al mundo siguiente. Tras el décimo nivel aparece la pantalla de victoria.
 
 ## Enemigos
 
@@ -124,7 +124,7 @@ salta-mundos/
 │   ├── GMSuperficie.pas       superficie de píxeles, fuente y exportación BMP
 │   ├── GMVentana.pas          ventana Win32, entrada y presentación
 │   ├── GMSprites.pas          paleta, sprites y tiles generados
-│   ├── GMNiveles.pas          temas y piezas de los seis niveles
+│   ├── GMNiveles.pas          temas y piezas de los diez niveles
 │   ├── GMSonido.pas           sintetizador sobre waveOut
 │   ├── GMJuego.pas            estados, física, colisiones y dibujo
 │   └── SaltaMundos.dpr        programa principal y opciones de consola
@@ -142,7 +142,7 @@ La captura de portada se publica en `docs/capturas/titulo.png`; la carpeta se cr
 
 ## Pruebas
 
-La autoprueba interna valida la estructura de los seis niveles (ancho mínimo, un único punto de inicio y una única compuerta de salida), la física en reposo y en salto, las colisiones contra paredes, una partida automática de 2400 fotogramas, el dibujo de los seis niveles sin ventana, el final de nivel con su paso al mundo siguiente, la muerte con descuento de vida y un recorrido completo con un bot que comprueba que ningún hueco ni pared impide terminar cada mundo. Cada comprobación recibe la condición de error y el resultado se escribe en `salta-mundos.log`, junto al ejecutable, y en la salida estándar.
+La autoprueba interna valida la estructura de los diez niveles (ancho mínimo, un único punto de inicio y una única compuerta de salida), la física en reposo y en salto, las colisiones contra paredes, una partida automática de 2400 fotogramas, el dibujo de los seis niveles sin ventana, el final de nivel con su paso al mundo siguiente, la muerte con descuento de vida y un recorrido completo con un bot que comprueba que ningún hueco ni pared impide terminar cada uno de los diez mundos. Cada comprobación recibe la condición de error y el resultado se escribe en `salta-mundos.log`, junto al ejecutable, y en la salida estándar.
 
 ```
 build\SaltaMundos.exe --autoprueba

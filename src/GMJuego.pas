@@ -961,16 +961,16 @@ begin
   if FHeroeX > FAnchoMapa * TAM_TILE - HEROE_ANCHO then
     FHeroeX := FAnchoMapa * TAM_TILE - HEROE_ANCHO;
 
-  { Meta: la compuerta de salida ocupa dos columnas y cuatro filas, y se
-    activa con que el heroe toque cualquier punto de esa caja. }
-  C1 := Floor(FHeroeX / TAM_TILE);
+  { Meta: la compuerta ocupa dos columnas y seis filas. Se busca el marcador
+    en toda la altura de la columna, sin mirar la fila del heroe, y se prueba
+    el contacto de su caja ampliada dos pixeles contra la compuerta. }
+  C1 := Floor(FHeroeX / TAM_TILE) - 1;
   C2 := Floor((FHeroeX + HEROE_ANCHO - 1) / TAM_TILE) + 1;
-  F1 := Floor(FHeroeY / TAM_TILE);
-  F2 := Floor((FHeroeY + HEROE_ALTO - 1) / TAM_TILE);
-  for F := F1 to F2 do
-    for C := C1 to C2 do
+  for C := C1 to C2 do
+    for F := 0 to FILAS_NIVEL - 1 do
       if TileEn(C, F) = 'E' then
-        if HaySolape(RectHeroe, RectPuerta(C, F)) then
+        if HaySolape(RectI(Round(FHeroeX) - 2, Round(FHeroeY) - 2,
+          HEROE_ANCHO + 4, HEROE_ALTO + 4), RectPuerta(C, F)) then
           TerminarNivel;
 
   { Caida al vacio. }
@@ -1369,8 +1369,9 @@ end;
 
 function TJuego.RectPuerta(Columna, Fila: Integer): TRectI;
 begin
-  { La compuerta se apoya en la fila marcada con E y sube cuatro filas. }
-  Result := RectI(Columna * TAM_TILE, (Fila - 3) * TAM_TILE, 2 * TAM_TILE, 4 * TAM_TILE);
+  { La compuerta se apoya en la fila marcada con E y sube seis filas: es
+    demasiado alta para saltarla, asi que hay que tocarla. }
+  Result := RectI(Columna * TAM_TILE, (Fila - 5) * TAM_TILE, 2 * TAM_TILE, 6 * TAM_TILE);
 end;
 
 procedure TJuego.DibujarPuerta(Pantalla: TSuperficie; X, Y: Integer);
@@ -1380,7 +1381,7 @@ var
 begin
   Ancho := 2 * TAM_TILE;
   Base := Y + TAM_TILE;
-  Tope := Y - 3 * TAM_TILE;
+  Tope := Y - 5 * TAM_TILE;
   Marco := RGBc(104, 110, 132);
   Brillo := RGBc(176, 184, 210);
   Hoja := RGBc(78, 84, 106);
@@ -1408,7 +1409,7 @@ begin
   Pantalla.Barra(X, Tope, 2, Base - Tope, Brillo);
   Pantalla.Barra(X + Ancho - 4, Tope, 4, Base - Tope, Oscurecer(Marco, 20));
   Pantalla.Barra(X + Ancho - 2, Tope, 2, Base - Tope, Oscurecer(Marco, 44));
-  for I := 0 to 1 do
+  for I := 0 to 2 do
   begin
     Pantalla.Barra(X + 1, Tope + 9 + I * 26, 2, 2, Brillo);
     Pantalla.Barra(X + Ancho - 3, Tope + 9 + I * 26, 2, 2, Brillo);
@@ -1691,7 +1692,7 @@ begin
 
   FLienzo.TextoCentrado(155, 'FLECHAS MUEVEN   ESPACIO SALTA   SHIFT CORRE', RGBc(196, 196, 218), 1);
   FLienzo.TextoCentrado(167, 'P PAUSA          ESC SALE', RGBc(150, 150, 176), 1);
-  FLienzo.TextoCentrado(176, 'META: TOCAR EL POSTE AL FINAL DE CADA MUNDO', RGBc(120, 210, 160), 1);
+  FLienzo.TextoCentrado(176, 'META: TOCAR LA COMPUERTA AL FINAL DE CADA MUNDO', RGBc(120, 210, 160), 1);
 
   FLienzo.Texto(6, 191, 'VERSION ' + VERSION_JUEGO, RGBc(30, 20, 12));
   FLienzo.Texto(ANCHO_VIRTUAL - 6 - FLienzo.AnchoTexto('HECHO CON FREE PASCAL'), 191,
@@ -1904,10 +1905,10 @@ begin
           'f': Grande.Copiar(X, Y, FEnemigos.Mosca[0]);
           'E':
             begin
-              Grande.Barra(X, Y - 48, 32, 5, RGBc(104, 110, 132));
-              Grande.Barra(X, Y - 48, 4, 64, RGBc(104, 110, 132));
-              Grande.Barra(X + 28, Y - 48, 4, 64, RGBc(104, 110, 132));
-              Grande.Barra(X + 4, Y - 43, 24, 56, RGBc(78, 84, 106));
+              Grande.Barra(X, Y - 80, 32, 5, RGBc(104, 110, 132));
+              Grande.Barra(X, Y - 80, 4, 96, RGBc(104, 110, 132));
+              Grande.Barra(X + 28, Y - 80, 4, 96, RGBc(104, 110, 132));
+              Grande.Barra(X + 4, Y - 75, 24, 88, RGBc(78, 84, 106));
             end;
         end;
       end;
@@ -2003,7 +2004,7 @@ begin
           Inc(FilasConE);
       end;
     Comprobar(FilasConM <> 1, 'nivel ' + IntToStr(Numero) + ' sin punto de inicio unico');
-    Comprobar(FilasConE <> 1, 'nivel ' + IntToStr(Numero) + ' sin poste de meta');
+    Comprobar(FilasConE <> 1, 'nivel ' + IntToStr(Numero) + ' sin compuerta de salida');
     Nivel.Free;
   end;
 
@@ -2117,7 +2118,7 @@ begin
   FillChar(P, SizeOf(P), 0);
   DarPulsos(P);
   Actualizar;
-  Comprobar(FEstado <> ejFinNivel, 'tocar el poste no termina el nivel');
+  Comprobar(FEstado <> ejFinNivel, 'tocar la compuerta no termina el nivel');
   for I := 1 to 140 do
   begin
     DarPulsos(P);
@@ -2143,7 +2144,7 @@ begin
 
   { Recorrido completo de los seis mundos con los enemigos desactivados:
     comprueba que no hay paredes ni huecos imposibles de salvar. }
-  Registrar('Paso 9: los seis mundos se pueden recorrer');
+  Registrar('Paso 9: los diez mundos se pueden recorrer');
   FMortalInactivo := True;
   for Numero := 1 to TOTAL_NIVELES do
   begin

@@ -1,5 +1,5 @@
-SALTA MUNDOS
-============
+SALTA MUNDOS 1.1.0
+==================
 
 Juego de plataformas por mundos, escrito en Object Pascal (modo Delphi) y
 compilado con Free Pascal para Windows de 64 bits.
@@ -22,8 +22,9 @@ OBJETIVO
 
 Cada mundo termina en una compuerta metalica con una baliza. Hay que llegar
 hasta ella antes de que se acabe el tiempo; al tocarla, las hojas se abren y
-comienza el mundo siguiente. Son seis mundos con ambientaciones distintas:
-pradera, atardecer, noche, cueva, desierto y fabrica.
+comienza el mundo siguiente. Son diez mundos con ambientaciones distintas:
+pradera, atardecer, noche, cueva, desierto, fabrica, bosque, volcan, hielo y
+espacio.
 
   Tuercas doradas   valen 20 puntos y cada 100 dan una vida extra
   Bichos            se eliminan saltando encima

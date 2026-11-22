@@ -9,7 +9,7 @@ interface
 
 const
   { Version que se muestra en pantalla y en el titulo de la ventana. }
-  VERSION_JUEGO = '1.0.0';
+  VERSION_JUEGO = '1.1.0';
 
   { Resolucion logica. Todo el juego se dibuja a 320x200 y la ventana
     escala esa imagen con un multiplo entero. }
