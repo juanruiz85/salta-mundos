@@ -16,6 +16,22 @@ El marcador rotula MUNDO a cada nivel; en este documento se usa «nivel» para r
 
 ![Compuerta de salida a punto de abrirse](docs/capturas/meta.png)
 
+## Los diez mundos
+
+| Nivel | Tema | Nivel | Tema |
+| --- | --- | --- | --- |
+| 1 | Pradera | 6 | Fábrica |
+| 2 | Atardecer | 7 | Bosque |
+| 3 | Noche | 8 | Volcán |
+| 4 | Cueva | 9 | Hielo |
+| 5 | Desierto | 10 | Espacio |
+
+Cada tema cambia cielo, colinas, tierra, ladrillos, columnas y el astro del fondo; los mundos 3, 4 y 10 agregan estrellas.
+
+![Mundo 8, volcán](docs/capturas/mundo8.png)
+
+![Mundo 10, espacio](docs/capturas/mundo10.png)
+
 ## Características
 
 - Resolución lógica de 320x200 píxeles, escalada a la ventana con un múltiplo entero de 1x a 4x y sin filtros.
