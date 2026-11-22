@@ -1,44 +1,75 @@
 # Salta Mundos
 
-Juego de plataformas 2D de diez niveles, escrito en Object Pascal (modo Delphi) y compilado con Free Pascal para Windows de 64 bits.
+Juego de plataformas 2D de veinte niveles, escrito en Object Pascal (modo Delphi) y compilado con Free Pascal para Windows de 64 bits.
 
-Versión 1.1.0 · 22 de noviembre de 2026
+Versión 1.2.0 · 22 de noviembre de 2026
 
-![Pantalla de título de Salta Mundos](docs/capturas/titulo.png)
+![Menú inicial de Salta Mundos](docs/capturas/menu.png)
 
 ## Qué es
 
-Salta Mundos es un juego de plataformas de desplazamiento lateral que se recorre de principio a fin en diez niveles, cada uno con un tema visual propio: pradera, atardecer, noche, cueva, desierto, fábrica, bosque, volcán, hielo y espacio. En cada nivel hay que alcanzar la compuerta de salida antes de que se agote el tiempo, recogiendo tuercas doradas y esquivando o pisando enemigos.
+Salta Mundos es un juego de plataformas de desplazamiento lateral que se recorre de principio a fin en veinte niveles, cada uno con un tema visual propio. En cada nivel hay que alcanzar la compuerta de salida antes de que se agote el tiempo, recogiendo tuercas doradas y esquivando o pisando enemigos.
 
-Todo el juego se dibuja a 320x200 píxeles y se escala a la ventana con un múltiplo entero, sin filtros, para conservar el aspecto de pixel art. No se carga ningún archivo de imagen, sonido o mapa: los sprites y los tiles se generan por código, la música y los efectos se sintetizan en tiempo real y los niveles están descritos dentro del ejecutable.
+Todo el juego se dibuja a 320x200 píxeles y se escala a la ventana con un múltiplo entero, sin filtros, para conservar el aspecto de pixel art. No se carga ningún archivo de imagen, sonido o mapa: los sprites y los tiles se generan por código, la música y los efectos se sintetizan en tiempo real, y los niveles y los códigos están descritos dentro del ejecutable.
 
-El marcador rotula MUNDO a cada nivel; en este documento se usa «nivel» para referirse a la misma unidad de juego.
-
-![Compuerta de salida a punto de abrirse](docs/capturas/meta.png)
-
-## Los diez mundos
+## Los veinte mundos
 
 | Nivel | Tema | Nivel | Tema |
 | --- | --- | --- | --- |
-| 1 | Pradera | 6 | Fábrica |
-| 2 | Atardecer | 7 | Bosque |
-| 3 | Noche | 8 | Volcán |
-| 4 | Cueva | 9 | Hielo |
-| 5 | Desierto | 10 | Espacio |
+| 1 | Pradera | 11 | Selva |
+| 2 | Atardecer | 12 | Cañón |
+| 3 | Noche | 13 | Glaciar |
+| 4 | Cueva | 14 | Ciudad |
+| 5 | Desierto | 15 | Nubes |
+| 6 | Fábrica | 16 | Pantano |
+| 7 | Bosque | 17 | Cristal |
+| 8 | Volcán | 18 | Mina |
+| 9 | Hielo | 19 | Órbita |
+| 10 | Espacio | 20 | Núcleo |
 
-Cada tema cambia cielo, colinas, tierra, ladrillos, columnas y el astro del fondo; los mundos 3, 4 y 10 agregan estrellas.
+Cada tema cambia cielo, colinas, tierra, ladrillos, columnas y el astro del fondo; los mundos 3, 4, 10, 17, 18 y 19 agregan estrellas.
 
 ![Mundo 8, volcán](docs/capturas/mundo8.png)
 
-![Mundo 10, espacio](docs/capturas/mundo10.png)
+![Mundo 20, núcleo](docs/capturas/mundo20.png)
+
+## Menú inicial
+
+El juego arranca en un menú con cuatro opciones, que se recorren con las flechas y se eligen con Enter:
+
+- **Jugar**: partida nueva desde el mundo 1, con tres vidas y marcador a cero.
+- **Códigos**: pantalla para escribir el código de un mundo y empezar directamente en él.
+- **Novedades**: lista de cambios de la versión actual y de las anteriores.
+- **Salir**: cierra el juego.
+
+En el pie del menú se muestra la versión instalada y el resultado de la comprobación de actualizaciones; la tecla R vuelve a consultar GitHub en cualquier momento.
+
+## Códigos de nivel
+
+Cada mundo tiene un código de cuatro caracteres. Al terminar un mundo, el cartel de nivel completo muestra el código del mundo siguiente; el jugador puede anotarlo y escribirlo en **Códigos** para retomar la partida en ese punto sin volver a jugar los anteriores.
+
+Los códigos se calculan con una mezcla a partir del número de mundo, así que son siempre los mismos y no dependen de guardar nada en disco. El alfabeto excluye las letras y los números que se confunden al leerlos (I, O, 0 y 1), y la pantalla de entrada acepta minúsculas y mayúsculas.
+
+![Cartel de nivel completo con el código del mundo siguiente](docs/capturas/codigo.png)
+
+## Comprobación de versión
+
+El menú consulta la última publicación del repositorio en GitHub cuando se abre y cada vez que se pulsa R. La consulta se hace en un hilo aparte con WinInet, sin congelar el juego, y el resultado se muestra en el pie del menú:
+
+- «Buscando actualizaciones...» mientras dura la consulta.
+- «Tienes la última versión» cuando la etiqueta publicada no es más nueva.
+- «Versión nueva disponible: vX.Y.Z» cuando hay una publicación posterior.
+- «No se pudo consultar GitHub» si no hay red o el servicio no responde.
+
+La comparación es numérica por segmentos, de modo que 1.2.0 se considera posterior a 1.1.0 y anterior a 1.10.0. Sin conexión el juego funciona igual; solo queda el aviso de error en el menú.
 
 ## Características
 
 - Resolución lógica de 320x200 píxeles, escalada a la ventana con un múltiplo entero de 1x a 4x y sin filtros.
+- Veinte niveles con paletas, cielos, colinas y decorados propios.
 - Sprites y tiles generados por código, sin archivos de imagen.
 - Música y efectos sintetizados con waveOut a 22050 Hz, mono y 16 bits.
-- Sin archivos de datos externos: gráficos, sonido y niveles viajan dentro del ejecutable.
-- Diez niveles con paletas, cielos, colinas y decorados propios.
+- Menú inicial con códigos de mundo, novedades y comprobación de versión en GitHub.
 - Salto de altura variable, tiempo de coyote y buffer de salto para un control preciso.
 - Autoprueba integrada que se ejecuta sin abrir ventana.
 - Compilación reproducible con Free Pascal y publicación automática desde GitHub Actions.
@@ -51,8 +82,10 @@ Cada tema cambia cielo, colinas, tierra, ladrillos, columnas y el astro del fond
 | Saltar | Espacio, flecha arriba, W o Z |
 | Correr | Shift o X |
 | Pausar y continuar | P |
-| Volver al título | Esc |
-| Confirmar en el título y en los mensajes | Enter o espacio |
+| Volver al menú | Esc |
+| Elegir en el menú y confirmar | Enter o espacio |
+| Buscar actualizaciones | R |
+| Escribir un código | Letras y números, retroceso para borrar |
 
 Las teclas de letras se leen por código de tecla, no por carácter, así que funcionan igual con distribución de teclado española o inglesa.
 
@@ -66,7 +99,7 @@ Las teclas de letras se leen por código de tecla, no por carácter, así que fu
 - Los ladrillos solo se rompen golpeándolos desde abajo con escudo.
 - Las cajas con sorpresa se abren desde abajo: entregan tuercas y, cada cuatro cajas golpeadas sin llevar escudo, entregan un escudo.
 - Se pierde una vida al tocar un enemigo sin escudo, al caer al vacío o al agotar el tiempo.
-- El nivel termina al tocar la compuerta de salida: las dos hojas se abren y el juego pasa al mundo siguiente. Tras el décimo nivel aparece la pantalla de victoria.
+- El nivel termina al tocar la compuerta de salida: las dos hojas se abren y el juego pasa al mundo siguiente. Tras el vigésimo nivel aparece la pantalla de victoria.
 
 ## Enemigos
 
@@ -101,7 +134,7 @@ Requisitos: Windows de 64 bits y Free Pascal 3.2.2 o superior, con el compilador
 
 El resultado esperado es `build\SaltaMundos.exe`. Si el compilador no está en el `PATH`, use su ruta completa, por ejemplo `C:\fpc322\bin\i386-win32\ppcrossx64.exe`.
 
-También se puede compilar desde Lazarus o Delphi creando un proyecto nuevo y agregando los ocho archivos de `src` como units del proyecto. El código usa el modo Delphi y solo depende de la RTL y de las unidades `Windows` y `MMSystem`; no hay bibliotecas de terceros.
+También se puede compilar desde Lazarus o Delphi creando un proyecto nuevo y agregando los once archivos de `src` como units del proyecto. El código usa el modo Delphi y solo depende de la RTL y de las unidades `Windows`, `MMSystem`, `WinInet` y `SyncObjs`; no hay bibliotecas de terceros.
 
 En el repositorio, `build.ps1` automatiza estos pasos, crea las carpetas necesarias, compila con optimización y deja el ejecutable en `dist`:
 
@@ -114,9 +147,9 @@ En el repositorio, `build.ps1` automatiza estos pasos, crea las carpetas necesar
 | Opción | Efecto |
 | --- | --- |
 | `--autoprueba` | Ejecuta la prueba interna sin abrir ventana y termina. |
-| `--capturar CARPETA` | Guarda `titulo.bmp` y `nivel1.bmp` a `nivel6.bmp`, y termina. |
-| `--mapa CARPETA` | Guarda `mapa1.bmp` a `mapa6.bmp` con el nivel completo, y termina. |
-| `--nivel N` | Empieza en el nivel N, de 1 a 6. |
+| `--capturar CARPETA` | Guarda capturas del menú, los códigos, las novedades y los veinte niveles en BMP, y termina. |
+| `--mapa CARPETA` | Guarda `mapa1.bmp` a `mapa20.bmp` con el nivel completo, y termina. |
+| `--nivel N` | Empieza en el nivel N, de 1 a 20. |
 | `--silencio` | Desactiva el audio. |
 | `--ayuda` | Muestra la ayuda y termina. |
 
@@ -132,33 +165,37 @@ salta-mundos/
 │       └── publicar.yml       compila y publica el zip en cada etiqueta v*
 ├── docs/
 │   ├── ARQUITECTURA.md        diseño interno del motor
-│   └── NOTAS-VERSION.md       notas del release
+│   ├── NOTAS-VERSION.md       notas del release
+│   └── capturas/              imágenes usadas en esta portada
 ├── scripts/
 │   └── instalar-fpc.ps1       instala Free Pascal 3.2.2 en Windows
 ├── src/
 │   ├── GMCore.pas             constantes, opciones y registro
 │   ├── GMSuperficie.pas       superficie de píxeles, fuente y exportación BMP
-│   ├── GMVentana.pas          ventana Win32, entrada y presentación
+│   ├── GMVentana.pas          ventana Win32, entrada, texto y presentación
 │   ├── GMSprites.pas          paleta, sprites y tiles generados
-│   ├── GMNiveles.pas          temas y piezas de los diez niveles
+│   ├── GMNiveles.pas          temas y piezas de los veinte niveles
+│   ├── GMCodigos.pas          códigos de mundo
+│   ├── GMActualizacion.pas    consulta de versión nueva en GitHub
+│   ├── GMNovedades.pas        texto de novedades del menú
 │   ├── GMSonido.pas           sintetizador sobre waveOut
-│   ├── GMJuego.pas            estados, física, colisiones y dibujo
+│   ├── GMJuego.pas            menú, estados, física, colisiones y dibujo
 │   └── SaltaMundos.dpr        programa principal y opciones de consola
 ├── tools/
 │   ├── hoja.pas               arma una hoja de contactos con todos los sprites
-│   └── probar-ventana.ps1     abre el juego y guarda una captura de la ventana
-├── build/                     salida de compilación (ignorada por git)
+│   ├── probar-ventana.ps1     abre el juego y guarda una captura de la ventana
+│   └── probar-version.pas     consulta la versión publicada sin abrir el juego
 ├── build.ps1
 ├── LEEME.txt
 ├── LICENSE
 └── README.md
 ```
 
-La captura de portada se publica en `docs/capturas/titulo.png`; la carpeta se crea al agregar la imagen. La carpeta `build` y los binarios están excluidos por `.gitignore`.
+La carpeta `build` y los binarios están excluidos por `.gitignore`.
 
 ## Pruebas
 
-La autoprueba interna valida la estructura de los diez niveles (ancho mínimo, un único punto de inicio y una única compuerta de salida), la física en reposo y en salto, las colisiones contra paredes, una partida automática de 2400 fotogramas, el dibujo de los seis niveles sin ventana, el final de nivel con su paso al mundo siguiente, la muerte con descuento de vida y un recorrido completo con un bot que comprueba que ningún hueco ni pared impide terminar cada uno de los diez mundos. Cada comprobación recibe la condición de error y el resultado se escribe en `salta-mundos.log`, junto al ejecutable, y en la salida estándar.
+La autoprueba interna recorre trece pasos y ejecuta 336 comprobaciones: estructura de los veinte niveles (ancho mínimo, un único punto de inicio y una única compuerta por nivel), física en reposo y en salto, colisiones contra paredes, una partida automática de 2400 fotogramas, el dibujo de todos los niveles sin ventana, el final de nivel con su paso al mundo siguiente, la muerte con descuento de vida, un recorrido completo con un bot que comprueba que ningún hueco ni pared impide terminar cada mundo, la entrada por flanco, el golpe de caja desde abajo, la unicidad de los veinte códigos y el recorrido del menú hasta arrancar una partida escribiendo un código.
 
 ```
 build\SaltaMundos.exe --autoprueba

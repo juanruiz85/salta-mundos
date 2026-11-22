@@ -1,36 +1,41 @@
-# Salta Mundos 1.1.0
+# Salta Mundos 1.2.0
 
-Segunda entrega del juego: cuatro mundos nuevos, piezas de nivel adicionales y
-una compuerta de salida más clara, lista para jugar en Windows de 64 bits.
+Tercera entrega del juego: veinte mundos, menú inicial con códigos de nivel,
+pantalla de novedades y comprobación de versión contra GitHub desde el propio
+juego.
 
 ## Qué incluye el zip
 
 - `SaltaMundos.exe`: el juego completo, sin instalador ni dependencias.
-- `LEEME.txt`: controles, reglas y cómo compilar el código.
+- `LEEME.txt`: controles, códigos, reglas y cómo compilar el código.
 - `LICENCIA.txt`: licencia MIT.
 
 ## Novedades de esta versión
 
-- Cuatro mundos nuevos con tema propio: bosque, volcán, hielo y espacio. El
-  juego pasa de seis a diez niveles.
-- Cinco piezas de nivel nuevas: fila de cajas, pasillo con techo de ladrillos,
-  plataformas altas, pareja de púas y pareja de columnas.
-- La compuerta de salida ahora mide seis bloques de alto, no se puede saltar y
-  se activa al rozarla en cualquier punto de su superficie.
+- Diez mundos nuevos: selva, cañón, glaciar, ciudad, nubes, pantano, cristal,
+  mina, órbita y núcleo. El juego pasa de diez a veinte niveles.
+- Menú inicial con cuatro opciones: jugar, códigos, novedades y salir.
+- Códigos de nivel: al terminar cada mundo se muestra el código del siguiente,
+  y la pantalla de códigos permite empezar directamente en ese mundo.
+- Comprobación de versión nueva en GitHub desde el menú, con la tecla R para
+  repetir la consulta. La petición corre en un hilo aparte con WinInet y, si no
+  hay red, el juego avisa y sigue funcionando.
+- Pantalla de novedades con el detalle de esta entrega y de la anterior.
+- El cartel de fin de nivel muestra el código del mundo siguiente.
 
 ## Correcciones
 
-- Las cajas con sorpresa ya se abren al golpearlas desde abajo; antes el
-  cálculo de la fila del bloque fallaba por un píxel.
-- La meta se detecta con toda la caja del héroe en lugar de un solo punto, de
-  modo que no hace falta colocarse en el centro exacto.
+- La comparación de versiones es numérica por segmentos: una etiqueta más
+  antigua ya no se anuncia como versión nueva.
+- Las pantallas de códigos y novedades pintan su propio fondo y ajustan el
+  texto al ancho del panel.
 
 ## Notas
 
 - El juego se dibuja a 320x200 y se escala con un múltiplo entero, sin filtros,
   para conservar el aspecto de pixel art.
-- Si el equipo no tiene salida de audio disponible, el juego arranca en
-  silencio sin mostrar errores.
+- Las letras y los números de los códigos excluyen I, O, 0 y 1 para que no se
+  confundan al leerlos.
 - Para compilar hace falta Free Pascal 3.2.2 o superior; el repositorio incluye
   el script `build.ps1` y el flujo de GitHub Actions que compila y prueba cada
   versión.

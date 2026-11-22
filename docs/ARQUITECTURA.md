@@ -16,7 +16,10 @@ El programa se divide en siete units y un `.dpr`. Cada unit tiene una responsabi
 | `GMSuperficie.pas` | Superficie de píxeles de 32 bits, primitivas de dibujo, fuente 5x7 y exportación BMP | `TSuperficie` |
 | `GMVentana.pas` | Ventana Win32, DIB section, lectura de teclado y reloj de fotogramas | `TVentana`, `TPulsos` |
 | `GMSprites.pas` | Paleta, sprites por mapas de caracteres y tiles generados | `TPaleta`, `TTiles`, `TSpritesHeroe`, `TSpritesEnemigos`, `TSpritesObjetos` |
-| `GMNiveles.pas` | Temas visuales, piezas de mapa y ensamblado de los diez niveles | `TTema`, `TNivel`, `CrearNivel` |
+| `GMNiveles.pas` | Temas visuales, piezas de mapa y ensamblado de los veinte niveles | `TTema`, `TNivel`, `CrearNivel` |
+| `GMCodigos.pas` | Códigos de cuatro caracteres por mundo y su búsqueda inversa | `CodigoDeNivel`, `NivelDeCodigo` |
+| `GMActualizacion.pas` | Consulta de la última publicación en GitHub con WinInet, en un hilo aparte | `TComprobadorActualizaciones` |
+| `GMNovedades.pas` | Texto de novedades que se muestra en el menú | `NOVEDADES` |
 | `GMSonido.pas` | Sintetizador de música y efectos sobre waveOut | `TSonido`, `TMezclador`, `THiloAudio` |
 | `GMJuego.pas` | Estados, física, colisiones, cámara, marcador y dibujo | `TJuego`, `TEntidad`, `TParticula` |
 | `SaltaMundos.dpr` | Punto de entrada, selección de modo y códigos de salida | `Principal` |
@@ -68,15 +71,17 @@ Estados de `TJuego` y sus transiciones:
 
 | Estado | Se entra por | Se sale por |
 | --- | --- | --- |
-| `ejTitulo` | Arranque del programa o Esc desde el juego | Enter o salto: `IniciarPartida` |
-| `ejJugando` | Inicio de partida o reanudación | P: pausa; muerte: `ejMuere`; meta: `ejFinNivel`; Esc: título |
-| `ejPausa` | P durante el juego | P o Enter: vuelve a `ejJugando`; Esc: título |
+| `ejMenu` | Arranque del programa o Esc desde el juego | Enter: jugar, códigos, novedades o salir; R: consulta la versión publicada |
+| `ejCodigos` | Opción Códigos del menú | Enter: si el código existe empieza ese mundo; Esc: menú |
+| `ejNovedades` | Opción Novedades del menú | Flechas: desplazan la lista; R: consulta la versión; Esc: menú |
+| `ejJugando` | Inicio de partida, código válido o reanudación | P: pausa; muerte: `ejMuere`; meta: `ejFinNivel`; Esc: menú |
+| `ejPausa` | P durante el juego | P o Enter: vuelve a `ejJugando`; Esc: menú |
 | `ejMuere` | Contacto con enemigo sin escudo, caída o tiempo agotado | 96 fotogramas después: resta vida y reinicia el nivel o pasa a `ejGameOver` |
 | `ejFinNivel` | Tocar la compuerta de salida | 130 fotogramas después: siguiente nivel o `ejVictoria` |
-| `ejGameOver` | Última vida perdida | Enter tras 40 fotogramas: título |
-| `ejVictoria` | Terminar el nivel 10 | Enter tras 40 fotogramas: título |
+| `ejGameOver` | Última vida perdida | Enter tras 40 fotogramas: menú |
+| `ejVictoria` | Terminar el nivel 20 | Enter tras 40 fotogramas: menú |
 
-La tabla describe las transiciones programadas en `TJuego.Actualizar`; en el bucle interactivo actual las que dependen de un flanco de teclado no llegan a dispararse por la lectura duplicada descrita en el párrafo anterior.
+La tabla describe las transiciones programadas en `TJuego.Actualizar`. Las acciones de un solo disparo usan `RecienPulsada`, que compara el estado del teclado con el del fotograma anterior; por eso `Ejecutar` no lee el teclado y deja esa lectura solo en `Actualizar`.
 
 ## 3. Superficie de 32 bits y presentación
 
@@ -223,6 +228,16 @@ Hay dieciocho piezas con nombre (`inicio`, `piso`, `piso_monedas`, `hueco`, `hue
 | 8 | Volcán | 16 | 256 | 4096 |
 | 9 | Hielo | 16 | 256 | 4096 |
 | 10 | Espacio | 17 | 272 | 4352 |
+| 11 | Selva | 14 | 224 | 3584 |
+| 12 | Cañón | 15 | 240 | 3840 |
+| 13 | Glaciar | 15 | 240 | 3840 |
+| 14 | Ciudad | 15 | 240 | 3840 |
+| 15 | Nubes | 14 | 224 | 3584 |
+| 16 | Pantano | 15 | 240 | 3840 |
+| 17 | Cristal | 15 | 240 | 3840 |
+| 18 | Mina | 15 | 240 | 3840 |
+| 19 | Órbita | 15 | 240 | 3840 |
+| 20 | Núcleo | 15 | 240 | 3840 |
 
 Temas visuales de `TemaDeNivel`:
 
@@ -238,6 +253,16 @@ Temas visuales de `TemaDeNivel`:
 | 8 | Volcán | `#3E181C` a `#BA4E2C` | No |
 | 9 | Hielo | `#76A8DC` a `#E2F4FF` | No |
 | 10 | Espacio | `#0A0A1A` a `#301E4C` | Sí |
+| 11 | Selva | `#286E46` a `#96C88C` | No |
+| 12 | Cañón | `#78503C` a `#E6B496` | No |
+| 13 | Glaciar | `#5A8CB4` a `#C8E6F5` | No |
+| 14 | Ciudad | `#323C64` a `#8C78A0` | No |
+| 15 | Nubes | `#78B4F0` a `#F0F8FF` | No |
+| 16 | Pantano | `#3C503C` a `#8CA078` | No |
+| 17 | Cristal | `#1E143C` a `#5A3C8C` | Sí |
+| 18 | Mina | `#141214` a `#3C322D` | Sí |
+| 19 | Órbita | `#080814` a `#3C1446` | Sí |
+| 20 | Núcleo | `#28000A` a `#C82828` | No |
 
 Al cargar un nivel, `CargarNivel` copia las filas a `FMapa`, reconstruye los tiles, borra entidades y llama a `SembrarEntidades`, que convierte las `g`, `s` y `f` en objetos `TEntidad` y borra esos caracteres del mapa. La `M` se usa para colocar al héroe en `columna * 16 + 2` y `fila * 16 + 1`, y también se borra. La `c` y la `E` permanecen como tiles y se dibujan o se consultan en cada fotograma.
 
@@ -331,28 +356,41 @@ Los efectos se generan muestra a muestra en `MuestraEfecto`:
 
 La mezcla suma melodía y efecto, recorta el resultado a `[-1, 1]` y lo escala a `±9000` sobre el rango de 16 bits, con un margen amplio para no saturar. Si `waveOutOpen` falla, el mezclador se libera y el juego continúa en silencio; `--silencio` impide abrir el dispositivo. El flag interno `FSilencio` del mezclador solo apaga la melodía, no los efectos, pero la fachada `TSonido` no llega a abrir el dispositivo cuando se pidió silencio.
 
-## 11. Autoprueba
+## 11. Menú, códigos y actualizaciones
+
+El programa arranca en `ejMenu`. `DibujarMenu` pinta el cielo del primer tema, una franja con el título y una lista de cuatro opciones que se recorre con las flechas; `FOpcionMenu` guarda la opción activa y Enter la ejecuta. Salir pone `FTErminar`, que corta el bucle de `Ejecutar`.
+
+Los códigos viven en `GMCodigos.pas`. `CodigoDeNivel` mezcla el número de mundo con dos multiplicaciones y desplazamientos (xorshift) y toma cuatro símbolos de un alfabeto de 32 caracteres sin I, O, 0 ni 1; `NivelDeCodigo` recorre los veinte mundos comparando el código ya normalizado. El cartel de fin de nivel muestra el código del mundo siguiente y la pantalla de códigos lo acepta en mayúsculas o minúsculas, con retroceso para corregir. La autoprueba verifica que los veinte códigos son distintos y que cada uno vuelve a su mundo.
+
+El texto se captura en `GMVentana`: el procedimiento de ventana guarda en `FCaracteres` los mensajes `WM_CHAR` imprimibles y los retrocesos (`WM_KEYDOWN` con `VK_BACK`), y `TomarTexto` los entrega y vacía la cola. La pantalla de códigos procesa esa cadena carácter a carácter, de modo que el juego no necesita un control de edición.
+
+`GMActualizacion.pas` declara las cuatro funciones de WinInet que necesita (`InternetOpenA`, `InternetOpenUrlA`, `InternetReadFile`, `InternetCloseHandle`) y consulta `releases/latest` del repositorio con un `User-Agent` propio y tiempos de espera de cuatro y seis segundos. La descarga corre en `THiloConsulta` y el resultado se publica en un campo protegido por sección crítica, que el menú lee cada fotograma. `CompararVersiones` divide las etiquetas por puntos y compara número a número, de modo que 1.10.0 es posterior a 1.2.0. Sin red, el estado queda en error y el juego sigue igual.
+
+## 12. Autoprueba
 
 La autoprueba se ejecuta con `--autoprueba` o `--selftest`. El `.dpr` crea `TJuego.Create(nil, Sonido)`, de modo que el juego usa un lienzo propio y no abre ventana, y llama a `TJuego.AutoPrueba`. El resultado se traduce en `Halt(0)` si pasó y `Halt(1)` si falló.
 
 `AutoPrueba` activa `FSimulacion` y alimenta el motor con `DarPulsos`, que sustituye la lectura real del teclado por un `TPulsos` armado a mano. Cada comprobación se declara con `Comprobar(Condicion, Descripcion)`, donde `Condicion` es la condición de error: si es verdadera, se agrega una línea `FALLA: ...` a la lista. Los pasos son:
 
-1. Estructura de los diez niveles: ancho de al menos 100 columnas, exactamente una `M` y exactamente una `E` por nivel.
+1. Estructura de los veinte niveles: ancho de al menos 100 columnas, exactamente una `M` y exactamente una `E` por nivel.
 2. Física en reposo: 40 fotogramas sin entrada deben dejar al héroe sobre el suelo, y 30 fotogramas más no deben moverlo más de 1,5 píxeles.
 3. Salto: con salto pulsado, la altura máxima debe quedar entre 24 y 80 píxeles y el héroe debe volver al suelo con un margen de 2 píxeles.
 4. Pared: se construye un muro de cuatro columnas por tres filas, se corre a la derecha 90 fotogramas y el héroe no debe atravesarlo ni quedarse sin avanzar.
 5. Partida automática: 2400 fotogramas corriendo a la derecha y saltando cinco de cada treinta deben recoger al menos una tuerca y avanzar más de 96 píxeles.
-6. Dibujo: se cargan los diez niveles, se simulan tres fotogramas en cada uno y se llama a `Dibujar` sin ventana.
+6. Dibujo: se cargan los veinte niveles, se simulan tres fotogramas en cada uno y se llama a `Dibujar` sin ventana.
 7. Fin de nivel: se coloca al héroe junto a la compuerta, se comprueba que el estado pasa a `ejFinNivel`, que las hojas se abren y que tras 140 fotogramas el juego avanza al mundo 2.
 8. Muerte: se deja caer al héroe fuera del mapa, se comprueba que entra en `ejMuere` y que tras 130 fotogramas pierde una vida y reanuda la partida.
-9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar a la compuerta en los diez mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
+9. Recorrido: un bot corre a la derecha y salta ante paredes, huecos y enemigos; con los enemigos desactivados debe llegar a la compuerta en los veinte mundos, lo que demuestra que ninguna pared ni ningún hueco impide avanzar.
 10. Entrada por flanco: pulsando salto un solo fotograma, el héroe debe despegar del suelo; pulsando avance, su velocidad horizontal debe dejar de ser cero.
+11. Caja: se coloca una caja sobre el héroe, se salta y debe quedar como usada y entregar la tuerca.
+12. Códigos: los veinte códigos deben tener cuatro caracteres, ser distintos entre sí y devolver su mundo; un código inventado no debe devolver ninguno.
+13. Menú: desde `ejMenu`, Enter debe iniciar la partida en el mundo 1; Esc debe volver al menú; eligiendo Códigos y escribiendo el código del mundo 5, la partida debe empezar en ese mundo.
 
 El paso 1 mide el ancho en tiles (`Nivel.Ancho`), no en píxeles. El paso 5 no exige terminar el nivel: comprueba que el bucle de juego, la recogida de tuercas y el avance funcionan juntos. El paso 6 no tiene aserciones; su valor es que cualquier excepción de dibujo hace fallar la ejecución. El paso 9 usa `FMortalInactivo` para desactivar el daño de los enemigos, de modo que mide la geometría del nivel y no la puntería del bot.
 
 Cada paso escribe una línea en `salta-mundos.log`, junto al ejecutable, y en la salida estándar. Al final se registra `RESULTADO: OK` o `RESULTADO: FALLO` con el detalle de las fallas. Si se produce una excepción no controlada, el bloque `try` del `.dpr` la registra y termina con código 2.
 
-## 12. Observaciones de implementación
+## 13. Observaciones de implementación
 
 Estos puntos se detectaron al leer el código y no forman parte del comportamiento documentado arriba:
 

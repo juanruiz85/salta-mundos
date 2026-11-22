@@ -67,9 +67,10 @@ type
   end;
 
 const
-  TOTAL_NIVELES = 10;
+  TOTAL_NIVELES = 20;
 
 function TemaDeNivel(Numero: Integer): TTema;
+
 function NombreNivel(Numero: Integer): string;
 function CrearNivel(Numero: Integer): TNivel;
 function EsSolido(Caracter: Char): Boolean;
@@ -355,178 +356,172 @@ begin
 end;
 
 function TemaDeNivel(Numero: Integer): TTema;
+{ Un tema es un juego de colores; la funcion auxiliar evita repetir doce
+  asignaciones por cada mundo. }
+
+  function Tema(const Nombre: string; CieloArriba, CieloAbajo, ColinaLejos,
+    ColinaCerca, Tierra, TierraClara, Ladrillo, LadrilloJunta, Columna,
+    ColumnaClara, Nube, Astro: TColor32; Estrellas: Boolean): TTema;
+  begin
+    Result.Nombre := Nombre;
+    Result.CieloArriba := CieloArriba;
+    Result.CieloAbajo := CieloAbajo;
+    Result.ColinaLejos := ColinaLejos;
+    Result.ColinaCerca := ColinaCerca;
+    Result.Tierra := Tierra;
+    Result.TierraClara := TierraClara;
+    Result.Ladrillo := Ladrillo;
+    Result.LadrilloJunta := LadrilloJunta;
+    Result.Columna := Columna;
+    Result.ColumnaClara := ColumnaClara;
+    Result.Nube := Nube;
+    Result.Astro := Astro;
+    Result.Estrellas := Estrellas;
+  end;
+
 begin
   case Numero of
-    1:
-      begin
-        Result.Nombre := 'PRADERA';
-        Result.CieloArriba := RGBc(84, 152, 232);
-        Result.CieloAbajo := RGBc(196, 228, 252);
-        Result.ColinaLejos := RGBc(126, 182, 152);
-        Result.ColinaCerca := RGBc(72, 148, 102);
-        Result.Tierra := RGBc(158, 102, 56);
-        Result.TierraClara := RGBc(96, 170, 74);
-        Result.Ladrillo := RGBc(188, 96, 52);
-        Result.LadrilloJunta := RGBc(96, 50, 28);
-        Result.Columna := RGBc(126, 132, 152);
-        Result.ColumnaClara := RGBc(196, 204, 222);
-        Result.Nube := RGBc(252, 254, 255);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(255, 246, 190);
-      end;
-    2:
-      begin
-        Result.Nombre := 'ATARDECER';
-        Result.CieloArriba := RGBc(226, 118, 96);
-        Result.CieloAbajo := RGBc(252, 208, 156);
-        Result.ColinaLejos := RGBc(166, 108, 124);
-        Result.ColinaCerca := RGBc(112, 68, 92);
-        Result.Tierra := RGBc(146, 84, 62);
-        Result.TierraClara := RGBc(206, 138, 78);
-        Result.Ladrillo := RGBc(154, 72, 60);
-        Result.LadrilloJunta := RGBc(78, 36, 30);
-        Result.Columna := RGBc(150, 108, 96);
-        Result.ColumnaClara := RGBc(214, 172, 148);
-        Result.Nube := RGBc(255, 226, 208);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(255, 216, 120);
-      end;
-    3:
-      begin
-        Result.Nombre := 'NOCHE';
-        Result.CieloArriba := RGBc(20, 24, 60);
-        Result.CieloAbajo := RGBc(62, 76, 128);
-        Result.ColinaLejos := RGBc(52, 60, 104);
-        Result.ColinaCerca := RGBc(30, 38, 74);
-        Result.Tierra := RGBc(72, 82, 112);
-        Result.TierraClara := RGBc(112, 126, 156);
-        Result.Ladrillo := RGBc(96, 84, 142);
-        Result.LadrilloJunta := RGBc(44, 38, 76);
-        Result.Columna := RGBc(98, 106, 146);
-        Result.ColumnaClara := RGBc(168, 178, 214);
-        Result.Nube := RGBc(150, 160, 196);
-        Result.Estrellas := True;
-        Result.Astro := RGBc(238, 240, 220);
-      end;
-    4:
-      begin
-        Result.Nombre := 'CUEVA';
-        Result.CieloArriba := RGBc(18, 16, 28);
-        Result.CieloAbajo := RGBc(46, 40, 58);
-        Result.ColinaLejos := RGBc(52, 46, 70);
-        Result.ColinaCerca := RGBc(32, 28, 46);
-        Result.Tierra := RGBc(86, 74, 98);
-        Result.TierraClara := RGBc(126, 108, 142);
-        Result.Ladrillo := RGBc(124, 94, 66);
-        Result.LadrilloJunta := RGBc(58, 40, 28);
-        Result.Columna := RGBc(120, 112, 134);
-        Result.ColumnaClara := RGBc(188, 180, 204);
-        Result.Nube := RGBc(70, 62, 88);
-        Result.Estrellas := True;
-        Result.Astro := RGBc(120, 220, 210);
-      end;
-    5:
-      begin
-        Result.Nombre := 'DESIERTO';
-        Result.CieloArriba := RGBc(244, 196, 108);
-        Result.CieloAbajo := RGBc(252, 238, 196);
-        Result.ColinaLejos := RGBc(226, 186, 122);
-        Result.ColinaCerca := RGBc(204, 158, 100);
-        Result.Tierra := RGBc(212, 168, 104);
-        Result.TierraClara := RGBc(240, 210, 152);
-        Result.Ladrillo := RGBc(198, 138, 82);
-        Result.LadrilloJunta := RGBc(104, 66, 36);
-        Result.Columna := RGBc(172, 140, 98);
-        Result.ColumnaClara := RGBc(228, 206, 162);
-        Result.Nube := RGBc(255, 250, 240);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(255, 250, 220);
-      end;
-    6:
-      begin
-        Result.Nombre := 'FABRICA';
-        Result.CieloArriba := RGBc(30, 34, 46);
-        Result.CieloAbajo := RGBc(74, 82, 102);
-        Result.ColinaLejos := RGBc(60, 66, 84);
-        Result.ColinaCerca := RGBc(40, 46, 62);
-        Result.Tierra := RGBc(98, 102, 118);
-        Result.TierraClara := RGBc(146, 152, 174);
-        Result.Ladrillo := RGBc(152, 112, 82);
-        Result.LadrilloJunta := RGBc(70, 50, 36);
-        Result.Columna := RGBc(142, 148, 166);
-        Result.ColumnaClara := RGBc(208, 214, 232);
-        Result.Nube := RGBc(96, 104, 122);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(255, 214, 140);
-      end;
-    7:
-      begin
-        Result.Nombre := 'BOSQUE';
-        Result.CieloArriba := RGBc(88, 148, 118);
-        Result.CieloAbajo := RGBc(186, 214, 178);
-        Result.ColinaLejos := RGBc(72, 112, 84);
-        Result.ColinaCerca := RGBc(44, 78, 58);
-        Result.Tierra := RGBc(92, 70, 46);
-        Result.TierraClara := RGBc(82, 148, 86);
-        Result.Ladrillo := RGBc(116, 86, 58);
-        Result.LadrilloJunta := RGBc(54, 38, 26);
-        Result.Columna := RGBc(108, 96, 80);
-        Result.ColumnaClara := RGBc(168, 152, 130);
-        Result.Nube := RGBc(226, 240, 222);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(238, 246, 200);
-      end;
-    8:
-      begin
-        Result.Nombre := 'VOLCAN';
-        Result.CieloArriba := RGBc(62, 24, 28);
-        Result.CieloAbajo := RGBc(186, 78, 44);
-        Result.ColinaLejos := RGBc(62, 32, 36);
-        Result.ColinaCerca := RGBc(38, 20, 26);
-        Result.Tierra := RGBc(72, 52, 56);
-        Result.TierraClara := RGBc(122, 62, 54);
-        Result.Ladrillo := RGBc(98, 54, 50);
-        Result.LadrilloJunta := RGBc(42, 20, 22);
-        Result.Columna := RGBc(72, 66, 74);
-        Result.ColumnaClara := RGBc(142, 134, 144);
-        Result.Nube := RGBc(92, 60, 60);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(255, 150, 90);
-      end;
-    9:
-      begin
-        Result.Nombre := 'HIELO';
-        Result.CieloArriba := RGBc(118, 168, 220);
-        Result.CieloAbajo := RGBc(226, 244, 255);
-        Result.ColinaLejos := RGBc(152, 190, 220);
-        Result.ColinaCerca := RGBc(206, 232, 250);
-        Result.Tierra := RGBc(150, 180, 200);
-        Result.TierraClara := RGBc(232, 248, 255);
-        Result.Ladrillo := RGBc(130, 168, 196);
-        Result.LadrilloJunta := RGBc(70, 100, 128);
-        Result.Columna := RGBc(140, 160, 180);
-        Result.ColumnaClara := RGBc(214, 232, 246);
-        Result.Nube := RGBc(250, 254, 255);
-        Result.Estrellas := False;
-        Result.Astro := RGBc(255, 255, 240);
-      end;
+    1: Result := Tema('PRADERA',
+      RGBc(84, 152, 232), RGBc(196, 228, 252),
+      RGBc(126, 182, 152), RGBc(72, 148, 102),
+      RGBc(158, 102, 56), RGBc(96, 170, 74),
+      RGBc(188, 96, 52), RGBc(96, 50, 28),
+      RGBc(126, 132, 152), RGBc(196, 204, 222),
+      RGBc(252, 254, 255), RGBc(255, 246, 190), False);
+    2: Result := Tema('ATARDECER',
+      RGBc(226, 118, 96), RGBc(252, 208, 156),
+      RGBc(166, 108, 124), RGBc(112, 68, 92),
+      RGBc(146, 84, 62), RGBc(206, 138, 78),
+      RGBc(154, 72, 60), RGBc(78, 36, 30),
+      RGBc(150, 108, 96), RGBc(214, 172, 148),
+      RGBc(255, 226, 208), RGBc(255, 216, 120), False);
+    3: Result := Tema('NOCHE',
+      RGBc(20, 24, 60), RGBc(62, 76, 128),
+      RGBc(52, 60, 104), RGBc(30, 38, 74),
+      RGBc(72, 82, 112), RGBc(112, 126, 156),
+      RGBc(96, 84, 142), RGBc(44, 38, 76),
+      RGBc(98, 106, 146), RGBc(168, 178, 214),
+      RGBc(150, 160, 196), RGBc(238, 240, 220), True);
+    4: Result := Tema('CUEVA',
+      RGBc(18, 16, 28), RGBc(46, 40, 58),
+      RGBc(52, 46, 70), RGBc(32, 28, 46),
+      RGBc(86, 74, 98), RGBc(126, 108, 142),
+      RGBc(124, 94, 66), RGBc(58, 40, 28),
+      RGBc(120, 112, 134), RGBc(188, 180, 204),
+      RGBc(70, 62, 88), RGBc(120, 220, 210), True);
+    5: Result := Tema('DESIERTO',
+      RGBc(244, 196, 108), RGBc(252, 238, 196),
+      RGBc(226, 186, 122), RGBc(204, 158, 100),
+      RGBc(212, 168, 104), RGBc(240, 210, 152),
+      RGBc(198, 138, 82), RGBc(104, 66, 36),
+      RGBc(172, 140, 98), RGBc(228, 206, 162),
+      RGBc(255, 250, 240), RGBc(255, 250, 220), False);
+    6: Result := Tema('FABRICA',
+      RGBc(30, 34, 46), RGBc(74, 82, 102),
+      RGBc(60, 66, 84), RGBc(40, 46, 62),
+      RGBc(98, 102, 118), RGBc(146, 152, 174),
+      RGBc(152, 112, 82), RGBc(70, 50, 36),
+      RGBc(142, 148, 166), RGBc(208, 214, 232),
+      RGBc(96, 104, 122), RGBc(255, 214, 140), False);
+    7: Result := Tema('BOSQUE',
+      RGBc(88, 148, 118), RGBc(186, 214, 178),
+      RGBc(72, 112, 84), RGBc(44, 78, 58),
+      RGBc(92, 70, 46), RGBc(82, 148, 86),
+      RGBc(116, 86, 58), RGBc(54, 38, 26),
+      RGBc(108, 96, 80), RGBc(168, 152, 130),
+      RGBc(226, 240, 222), RGBc(238, 246, 200), False);
+    8: Result := Tema('VOLCAN',
+      RGBc(62, 24, 28), RGBc(186, 78, 44),
+      RGBc(62, 32, 36), RGBc(38, 20, 26),
+      RGBc(72, 52, 56), RGBc(122, 62, 54),
+      RGBc(98, 54, 50), RGBc(42, 20, 22),
+      RGBc(72, 66, 74), RGBc(142, 134, 144),
+      RGBc(92, 60, 60), RGBc(255, 150, 90), False);
+    9: Result := Tema('HIELO',
+      RGBc(118, 168, 220), RGBc(226, 244, 255),
+      RGBc(152, 190, 220), RGBc(206, 232, 250),
+      RGBc(150, 180, 200), RGBc(232, 248, 255),
+      RGBc(130, 168, 196), RGBc(70, 100, 128),
+      RGBc(140, 160, 180), RGBc(214, 232, 246),
+      RGBc(250, 254, 255), RGBc(255, 255, 240), False);
+    10: Result := Tema('ESPACIO',
+      RGBc(10, 10, 26), RGBc(48, 30, 76),
+      RGBc(38, 28, 64), RGBc(26, 18, 48),
+      RGBc(58, 50, 86), RGBc(108, 96, 150),
+      RGBc(86, 70, 120), RGBc(38, 28, 58),
+      RGBc(110, 100, 140), RGBc(180, 170, 210),
+      RGBc(60, 50, 90), RGBc(220, 210, 255), True);
+    11: Result := Tema('SELVA',
+      RGBc(40, 110, 70), RGBc(150, 200, 140),
+      RGBc(30, 90, 55), RGBc(20, 60, 40),
+      RGBc(80, 62, 40), RGBc(60, 140, 70),
+      RGBc(110, 80, 50), RGBc(32, 20, 16),
+      RGBc(90, 100, 80), RGBc(140, 152, 120),
+      RGBc(140, 200, 126), RGBc(184, 220, 150), False);
+    12: Result := Tema('CANON',
+      RGBc(120, 80, 60), RGBc(230, 180, 150),
+      RGBc(150, 90, 70), RGBc(110, 60, 50),
+      RGBc(160, 90, 60), RGBc(200, 130, 90),
+      RGBc(140, 80, 60), RGBc(56, 32, 26),
+      RGBc(150, 120, 100), RGBc(188, 156, 130),
+      RGBc(232, 200, 168), RGBc(255, 180, 130), False);
+    13: Result := Tema('GLACIAR',
+      RGBc(90, 140, 180), RGBc(200, 230, 245),
+      RGBc(140, 180, 200), RGBc(180, 210, 230),
+      RGBc(160, 190, 210), RGBc(230, 245, 255),
+      RGBc(120, 160, 180), RGBc(46, 70, 88),
+      RGBc(130, 150, 170), RGBc(192, 216, 232),
+      RGBc(240, 250, 255), RGBc(255, 255, 255), False);
+    14: Result := Tema('CIUDAD',
+      RGBc(50, 60, 100), RGBc(140, 120, 160),
+      RGBc(60, 60, 90), RGBc(40, 40, 70),
+      RGBc(90, 90, 110), RGBc(130, 130, 160),
+      RGBc(130, 100, 90), RGBc(58, 38, 32),
+      RGBc(120, 130, 150), RGBc(192, 198, 216),
+      RGBc(110, 110, 130), RGBc(255, 210, 160), False);
+    15: Result := Tema('NUBES',
+      RGBc(120, 180, 240), RGBc(240, 248, 255),
+      RGBc(200, 220, 245), RGBc(170, 200, 235),
+      RGBc(190, 205, 230), RGBc(240, 248, 255),
+      RGBc(170, 180, 210), RGBc(90, 100, 130),
+      RGBc(180, 195, 220), RGBc(224, 236, 250),
+      RGBc(252, 254, 255), RGBc(255, 255, 224), False);
+    16: Result := Tema('PANTANO',
+      RGBc(60, 80, 60), RGBc(140, 160, 120),
+      RGBc(70, 90, 60), RGBc(45, 60, 45),
+      RGBc(70, 60, 40), RGBc(90, 120, 60),
+      RGBc(90, 80, 50), RGBc(36, 26, 16),
+      RGBc(100, 110, 90), RGBc(168, 180, 150),
+      RGBc(74, 90, 70), RGBc(200, 216, 160), False);
+    17: Result := Tema('CRISTAL',
+      RGBc(30, 20, 60), RGBc(90, 60, 140),
+      RGBc(60, 40, 100), RGBc(40, 25, 70),
+      RGBc(80, 70, 120), RGBc(150, 130, 210),
+      RGBc(110, 90, 160), RGBc(38, 26, 58),
+      RGBc(120, 110, 170), RGBc(210, 198, 240),
+      RGBc(60, 50, 100), RGBc(156, 230, 220), True);
+    18: Result := Tema('MINA',
+      RGBc(20, 18, 20), RGBc(60, 50, 45),
+      RGBc(50, 42, 40), RGBc(30, 25, 25),
+      RGBc(70, 60, 50), RGBc(120, 100, 70),
+      RGBc(100, 80, 60), RGBc(42, 30, 22),
+      RGBc(110, 100, 90), RGBc(184, 172, 158),
+      RGBc(60, 50, 42), RGBc(255, 210, 140), True);
+    19: Result := Tema('ORBITA',
+      RGBc(8, 8, 20), RGBc(60, 20, 70),
+      RGBc(40, 20, 60), RGBc(20, 10, 40),
+      RGBc(50, 40, 80), RGBc(120, 80, 180),
+      RGBc(90, 60, 120), RGBc(30, 16, 38),
+      RGBc(140, 130, 170), RGBc(210, 198, 234),
+      RGBc(60, 40, 80), RGBc(255, 210, 240), True);
   else
-    begin
-      Result.Nombre := 'ESPACIO';
-      Result.CieloArriba := RGBc(10, 10, 26);
-      Result.CieloAbajo := RGBc(48, 30, 76);
-      Result.ColinaLejos := RGBc(38, 28, 64);
-      Result.ColinaCerca := RGBc(26, 18, 48);
-      Result.Tierra := RGBc(58, 50, 86);
-      Result.TierraClara := RGBc(108, 96, 150);
-      Result.Ladrillo := RGBc(86, 70, 120);
-      Result.LadrilloJunta := RGBc(38, 28, 58);
-      Result.Columna := RGBc(110, 100, 140);
-      Result.ColumnaClara := RGBc(180, 170, 210);
-      Result.Nube := RGBc(60, 50, 90);
-      Result.Estrellas := True;
-      Result.Astro := RGBc(220, 210, 255);
-    end;
+    Result := Tema('NUCLEO',
+      RGBc(40, 0, 10), RGBc(200, 40, 40),
+      RGBc(80, 10, 20), RGBc(50, 5, 15),
+      RGBc(90, 30, 30), RGBc(220, 90, 60),
+      RGBc(140, 50, 40), RGBc(42, 10, 8),
+      RGBc(160, 120, 110), RGBc(230, 192, 180),
+      RGBc(110, 30, 30), RGBc(255, 255, 200), False);
   end;
 end;
 
@@ -770,24 +765,182 @@ begin
         AgregarPorNombre(Result, 'bicho_pua');
         AgregarPorNombre(Result, 'final');
       end;
+    11:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'columna');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'final');
+      end;
+    12:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'bloques');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'final');
+      end;
+    13:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'columna_alta');
+        AgregarPorNombre(Result, 'final');
+      end;
+    14:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'final');
+      end;
+    15:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'final');
+      end;
+    16:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'columna_alta');
+        AgregarPorNombre(Result, 'final');
+      end;
+    17:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'final');
+      end;
+    18:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'final');
+      end;
+    19:
+      begin
+        AgregarPorNombre(Result, 'inicio');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'plataformas_altas');
+        AgregarPorNombre(Result, 'columnas');
+        AgregarPorNombre(Result, 'enemigos');
+        AgregarPorNombre(Result, 'pasillo');
+        AgregarPorNombre(Result, 'hueco_bricks');
+        AgregarPorNombre(Result, 'puas');
+        AgregarPorNombre(Result, 'cajas');
+        AgregarPorNombre(Result, 'escalera');
+        AgregarPorNombre(Result, 'hueco');
+        AgregarPorNombre(Result, 'bicho_pua');
+        AgregarPorNombre(Result, 'mosca');
+        AgregarPorNombre(Result, 'final');
+      end;
   else
     begin
       AgregarPorNombre(Result, 'inicio');
       AgregarPorNombre(Result, 'enemigos');
       AgregarPorNombre(Result, 'hueco');
-      AgregarPorNombre(Result, 'mosca');
-      AgregarPorNombre(Result, 'bloques');
-      AgregarPorNombre(Result, 'hueco');
       AgregarPorNombre(Result, 'puas');
-      AgregarPorNombre(Result, 'plataformas_altas');
-      AgregarPorNombre(Result, 'cajas');
-      AgregarPorNombre(Result, 'columna_alta');
-      AgregarPorNombre(Result, 'enemigos');
+      AgregarPorNombre(Result, 'columnas');
+      AgregarPorNombre(Result, 'mosca');
       AgregarPorNombre(Result, 'pasillo');
       AgregarPorNombre(Result, 'hueco_bricks');
-      AgregarPorNombre(Result, 'bicho_pua');
+      AgregarPorNombre(Result, 'plataformas_altas');
+      AgregarPorNombre(Result, 'enemigos');
+      AgregarPorNombre(Result, 'cajas');
       AgregarPorNombre(Result, 'escalera');
-      AgregarPorNombre(Result, 'mosca');
+      AgregarPorNombre(Result, 'hueco');
+      AgregarPorNombre(Result, 'bicho_pua');
       AgregarPorNombre(Result, 'final');
     end;
   end;

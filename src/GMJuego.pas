@@ -13,6 +13,9 @@ uses
   Contnrs,
   Math,
   GMCore,
+  GMCodigos,
+  GMActualizacion,
+  GMNovedades,
   GMSuperficie,
   GMSprites,
   GMNiveles,
@@ -20,7 +23,8 @@ uses
   GMVentana;
 
 type
-  TEstadoJuego = (ejTitulo, ejJugando, ejPausa, ejMuere, ejFinNivel, ejGameOver, ejVictoria);
+  TEstadoJuego = (ejMenu, ejJugando, ejPausa, ejMuere, ejFinNivel, ejGameOver,
+    ejVictoria, ejCodigos, ejNovedades);
   TTipoEntidad = (teBicho, tePua, teMosca, teTuerca, teEscudo);
 
 const
@@ -116,6 +120,14 @@ type
     FBotActivo: Boolean;
     FBotSalto: Integer;
     FMortalInactivo: Boolean;
+    FTErminar: Boolean;
+    FComprobador: TComprobadorActualizaciones;
+    FOpcionMenu: Integer;
+    FCodigo: string;
+    FMensajeCodigo: string;
+    FTiempoMensaje: Integer;
+    FDesplazamientoNovedades: Integer;
+    FTextoSimulado: string;
 
     procedure LeerTeclas;
     function Pulsada(Tecla: Char): Boolean;
@@ -158,7 +170,9 @@ type
     procedure AvanzarNivel;
     procedure EsparcirEscudo(X, Y: Integer);
 
-    procedure ActualizarTitulo;
+    procedure ActualizarMenu;
+    procedure ActualizarCodigos;
+    procedure ActualizarNovedades;
     procedure ActualizarJugando;
     procedure ActualizarMuerte;
     procedure ActualizarFinNivel;
@@ -172,7 +186,10 @@ type
     procedure DibujarParticulas;
     procedure DibujarHud;
     procedure DibujarIconoTuerca(X, Y: Integer);
-    procedure DibujarTitulo;
+    procedure DibujarFondoMenu;
+    procedure DibujarMenu;
+    procedure DibujarCodigos;
+    procedure DibujarNovedades;
     procedure DibujarPausa;
     procedure DibujarGameOver;
     procedure DibujarVictoria;
@@ -202,6 +219,7 @@ type
     procedure DibujarCuadro;
     procedure EmpezarEnNivel(Numero: Integer);
     procedure DarPulsos(const P: TPulsos);
+    procedure DarTexto(const S: string);
     property Estado: TEstadoJuego read FEstado;
     property Puntos: Integer read FPuntos;
     property Tuercas: Integer read FTuercas;
@@ -288,7 +306,14 @@ begin
   FObjetos := TSpritesObjetos.Create;
   FEntidades := TObjectList.Create(True);
   FParticulas := TObjectList.Create(True);
-  FEstado := ejTitulo;
+  FEstado := ejMenu;
+  FComprobador := TComprobadorActualizaciones.Create;
+  FOpcionMenu := 0;
+  FCodigo := '';
+  FMensajeCodigo := '';
+  FTiempoMensaje := 0;
+  FDesplazamientoNovedades := 0;
+  FTErminar := False;
   FNivelActual := 1;
   FVidas := 3;
   FPuntos := 0;
@@ -308,6 +333,7 @@ end;
 
 destructor TJuego.Destroy;
 begin
+  FreeAndNil(FComprobador);
   LimpiarEntidades;
   FEntidades.Free;
   FParticulas.Free;
@@ -373,6 +399,12 @@ procedure TJuego.DarPulsos(const P: TPulsos);
 begin
   FSimulacion := True;
   FTeclasSimuladas := P;
+end;
+
+procedure TJuego.DarTexto(const S: string);
+begin
+  FSimulacion := True;
+  FTextoSimulado := FTextoSimulado + S;
 end;
 
 { ----------------------------- mapa ----------------------------- }
@@ -808,7 +840,7 @@ var
   VelMax: Single;
   ChoqueX, ChoqueY, EnSuelo: Boolean;
   R: TRectI;
-  I, ColCentro, FilaCabeza, C, C1, C2, F, F1, F2: Integer;
+  I, ColCentro, FilaCabeza, C, C1, C2, F: Integer;
   Moviendo: Boolean;
 begin
   if FHeroeReforzado then
@@ -1217,11 +1249,108 @@ begin
     FEstado := ejPausa;
 end;
 
-procedure TJuego.ActualizarTitulo;
+procedure TJuego.ActualizarMenu;
 begin
   Inc(FTiempoEstado);
+  { La primera vez que se muestra el menu se consulta la version publicada. }
+  if (FVentana <> nil) and (FComprobador.Estado = acSinComprobar) then
+    FComprobador.Consultar;
+  if RecienPulsada('A') or RecienPulsada('I') then
+  begin
+    if RecienPulsada('A') then
+      Dec(FOpcionMenu)
+    else
+      Inc(FOpcionMenu);
+    if FOpcionMenu < 0 then
+      FOpcionMenu := 3;
+    if FOpcionMenu > 3 then
+      FOpcionMenu := 0;
+  end;
+  if RecienPulsada('R') then
+    FComprobador.Consultar;
   if RecienPulsada('E') or RecienPulsada('S') then
-    IniciarPartida;
+    case FOpcionMenu of
+      0: IniciarPartida;
+      1:
+        begin
+          FEstado := ejCodigos;
+          FCodigo := '';
+          FMensajeCodigo := '';
+          FTiempoMensaje := 0;
+        end;
+      2:
+        begin
+          FEstado := ejNovedades;
+          FDesplazamientoNovedades := 0;
+        end;
+    else
+      FTErminar := True;
+    end;
+end;
+
+procedure TJuego.ActualizarCodigos;
+var
+  Entrada: string;
+  I: Integer;
+  Nivel: Integer;
+begin
+  Inc(FTiempoEstado);
+  if FTiempoMensaje > 0 then
+    Dec(FTiempoMensaje);
+  if FSimulacion then
+  begin
+    Entrada := FTextoSimulado;
+    FTextoSimulado := '';
+  end
+  else if FVentana <> nil then
+    Entrada := FVentana.TomarTexto
+  else
+    Entrada := '';
+  for I := 1 to Length(Entrada) do
+  begin
+    if Entrada[I] = #8 then
+    begin
+      FCodigo := Copy(FCodigo, 1, Length(FCodigo) - 1);
+      FMensajeCodigo := '';
+    end
+    else if Entrada[I] = #13 then
+    begin
+      Nivel := NivelDeCodigo(FCodigo);
+      if Nivel > 0 then
+      begin
+        EmpezarEnNivel(Nivel);
+        Exit;
+      end;
+      FMensajeCodigo := 'CODIGO NO VALIDO';
+      FTiempoMensaje := 90;
+    end
+    else if Pos(Entrada[I], ALFABETO_CODIGO) > 0 then
+    begin
+      if Length(FCodigo) >= LARGO_CODIGO then
+        FCodigo := Copy(FCodigo, 1, LARGO_CODIGO - 1);
+      FCodigo := FCodigo + Entrada[I];
+      FMensajeCodigo := '';
+    end;
+  end;
+  if RecienPulsada('X') then
+    FEstado := ejMenu;
+end;
+
+procedure TJuego.ActualizarNovedades;
+begin
+  Inc(FTiempoEstado);
+  if RecienPulsada('A') then
+  begin
+    Dec(FDesplazamientoNovedades);
+    if FDesplazamientoNovedades < 0 then
+      FDesplazamientoNovedades := 0;
+  end;
+  if RecienPulsada('I') then
+    Inc(FDesplazamientoNovedades);
+  if RecienPulsada('R') then
+    FComprobador.Consultar;
+  if RecienPulsada('E') or RecienPulsada('X') then
+    FEstado := ejMenu;
 end;
 
 procedure TJuego.ActualizarMuerte;
@@ -1259,7 +1388,7 @@ begin
   Inc(FTiempoEstado);
   if (FTiempoEstado > 40) and (RecienPulsada('E') or RecienPulsada('S')) then
   begin
-    FEstado := ejTitulo;
+    FEstado := ejMenu;
     FTiempoEstado := 0;
     CargarNivel(1);
   end;
@@ -1269,14 +1398,13 @@ procedure TJuego.Actualizar;
 begin
   Inc(FFotograma);
   LeerTeclas;
-  if RecienPulsada('X') and (FEstado <> ejTitulo) then
-  begin
-    if (FEstado = ejJugando) or (FEstado = ejPausa) then
-      FEstado := ejTitulo;
-  end;
+  if RecienPulsada('X') and ((FEstado = ejJugando) or (FEstado = ejPausa)) then
+    FEstado := ejMenu;
 
   case FEstado of
-    ejTitulo: ActualizarTitulo;
+    ejMenu: ActualizarMenu;
+    ejCodigos: ActualizarCodigos;
+    ejNovedades: ActualizarNovedades;
     ejJugando:
       begin
         if RecienPulsada('P') then
@@ -1639,64 +1767,166 @@ begin
     FLienzo.TextoCentrado(Y + 54, Linea2, RGBc(200, 200, 220), 1);
 end;
 
-procedure TJuego.DibujarTitulo;
+procedure TJuego.DibujarFondoMenu;
 var
   Tema: TTema;
   I: Integer;
 begin
   Tema := TemaDeNivel(1);
   FLienzo.Degradado(0, ALTO_VIRTUAL, Tema.CieloArriba, Tema.CieloAbajo);
-
-  { Nubes lejanas. }
   for I := 0 to 3 do
   begin
-    FLienzo.Barra(30 + I * 78, 62 + (I mod 2) * 12, 26, 7, Tema.Nube);
-    FLienzo.Barra(36 + I * 78, 58 + (I mod 2) * 12, 13, 7, Tema.Nube);
-    FLienzo.Barra(50 + I * 78, 68 + (I mod 2) * 12, 16, 4, Oscurecer(Tema.Nube, 24));
+    FLienzo.Barra(30 + I * 78, 62 + (I mod 2) * 10, 26, 7, Tema.Nube);
+    FLienzo.Barra(36 + I * 78, 58 + (I mod 2) * 10, 13, 7, Tema.Nube);
   end;
+  FLienzo.Barra(0, 118, ANCHO_VIRTUAL, 82, Tema.Tierra);
+  FLienzo.Barra(0, 118, ANCHO_VIRTUAL, 10, Tema.TierraClara);
+  FLienzo.LineaH(0, 118, ANCHO_VIRTUAL, Aclarar(Tema.TierraClara, 20));
+  FLienzo.LineaH(0, 128, ANCHO_VIRTUAL, Oscurecer(Tema.Tierra, 30));
+end;
 
-  { Cesped y tierra del pie de la pantalla. }
-  FLienzo.Barra(0, 112, ANCHO_VIRTUAL, 88, Tema.Tierra);
-  FLienzo.Barra(0, 112, ANCHO_VIRTUAL, 12, Tema.TierraClara);
-  FLienzo.LineaH(0, 112, ANCHO_VIRTUAL, Aclarar(Tema.TierraClara, 20));
-  FLienzo.LineaH(0, 124, ANCHO_VIRTUAL, Oscurecer(Tema.Tierra, 30));
-  for I := 0 to 13 do
-    FLienzo.Barra(8 + I * 23, 136 + (I mod 3) * 8, 3, 3, Oscurecer(Tema.Tierra, 20));
+procedure TJuego.DibujarMenu;
+const
+  OPCIONES: array[0..3] of string = ('JUGAR', 'CODIGOS', 'NOVEDADES', 'SALIR');
+  DESCRIPCIONES: array[0..3] of string = (
+    'EMPEZAR DESDE EL MUNDO 1',
+    'SALTAR A UN MUNDO CON SU CODIGO',
+    'QUE CAMBIA EN ESTA VERSION',
+    'CERRAR EL JUEGO');
+var
+  I, Y: Integer;
+  Texto: string;
+  Color: TColor32;
+begin
+  DibujarFondoMenu;
 
   { Franja del titulo. }
-  FLienzo.Barra(0, 10, ANCHO_VIRTUAL, 44, RGBc(28, 26, 44));
-  FLienzo.LineaH(0, 10, ANCHO_VIRTUAL, RGBc(126, 118, 168));
-  FLienzo.LineaH(0, 53, ANCHO_VIRTUAL, RGBc(12, 10, 20));
-  FLienzo.TextoCentradoSombra(14, 'SALTA MUNDOS', RGBc(255, 226, 96), RGBc(128, 46, 0), 3);
-  FLienzo.TextoCentrado(40, 'UN HOMENAJE EN OBJECT PASCAL', RGBc(186, 182, 214), 1);
+  FLienzo.Barra(0, 8, ANCHO_VIRTUAL, 44, RGBc(28, 26, 44));
+  FLienzo.LineaH(0, 8, ANCHO_VIRTUAL, RGBc(126, 118, 168));
+  FLienzo.LineaH(0, 51, ANCHO_VIRTUAL, RGBc(12, 10, 20));
+  FLienzo.TextoCentradoSombra(12, 'SALTA MUNDOS', RGBc(255, 226, 96), RGBc(128, 46, 0), 3);
+  FLienzo.TextoCentrado(38, 'VEINTE MUNDOS EN OBJECT PASCAL', RGBc(186, 182, 214), 1);
 
-  { Desfile de personajes sobre el cesped. }
-  FLienzo.CopiarColor(44, 96, FHeroe.CuadroCorre(FFotograma div 6), COLOR_TRANSPARENTE);
-  FLienzo.CopiarColor(78, 96, FHeroe.Quieto, COLOR_TRANSPARENTE);
-  FLienzo.CopiarColor(112, 94, FObjetos.Escudo, COLOR_TRANSPARENTE);
-  FLienzo.CopiarColor(146, 96, FObjetos.Moneda[(FFotograma div 7) mod 4], COLOR_TRANSPARENTE);
-  FLienzo.CopiarColor(182, 96, FEnemigos.Bicho[(FFotograma div 14) mod 2], COLOR_TRANSPARENTE);
-  FLienzo.CopiarColor(218, 96, FEnemigos.Pua[(FFotograma div 3) mod 4], COLOR_TRANSPARENTE);
-  FLienzo.CopiarColor(252, 96, FEnemigos.Mosca[(FFotograma div 5) mod 2], COLOR_TRANSPARENTE);
+  { Lista de opciones. }
+  FLienzo.Barra(24, 58, 272, 78, RGBc(22, 20, 34));
+  FLienzo.Marco(24, 58, 272, 78, RGBc(92, 86, 128));
+  for I := 0 to 3 do
+  begin
+    Y := 66 + I * 17;
+    if I = FOpcionMenu then
+    begin
+      FLienzo.Barra(28, Y - 3, 264, 15, RGBc(58, 54, 92));
+      Color := RGBc(255, 236, 140);
+      FLienzo.Texto(34, Y, '>', Color);
+    end
+    else
+      Color := RGBc(196, 196, 218);
+    FLienzo.Texto(46, Y, OPCIONES[I], Color);
+    if I = FOpcionMenu then
+      FLienzo.Texto(126, Y, DESCRIPCIONES[I], RGBc(160, 200, 210));
+  end;
 
-  { Panel de instrucciones. }
-  FLienzo.Barra(0, 128, ANCHO_VIRTUAL, 58, RGBc(24, 22, 38));
-  FLienzo.LineaH(0, 128, ANCHO_VIRTUAL, RGBc(96, 90, 132));
-  FLienzo.LineaH(0, 185, ANCHO_VIRTUAL, RGBc(10, 8, 18));
+  { Pie con version y estado de la comprobacion. }
+  FLienzo.Barra(0, 142, ANCHO_VIRTUAL, 58, RGBc(24, 22, 38));
+  FLienzo.LineaH(0, 142, ANCHO_VIRTUAL, RGBc(96, 90, 132));
+  Texto := 'VERSION ' + VERSION_JUEGO;
+  FLienzo.Texto(6, 148, Texto, RGBc(214, 214, 236));
+  Texto := IntToStr(TOTAL_NIVELES) + ' MUNDOS';
+  FLienzo.Texto(ANCHO_VIRTUAL - 6 - FLienzo.AnchoTexto(Texto), 148, Texto,
+    RGBc(214, 214, 236));
 
-  if (FFotograma div 22) mod 2 = 0 then
-    FLienzo.TextoCentradoSombra(137, 'PULSA ENTER PARA JUGAR', RGBc(255, 236, 140),
-      RGBc(96, 60, 0), 1)
+  case FComprobador.Estado of
+    acDisponible: Color := RGBc(255, 206, 120);
+    acAlDia: Color := RGBc(140, 230, 150);
+    acError: Color := RGBc(226, 140, 130);
   else
-    FLienzo.TextoCentrado(137, 'PULSA ENTER PARA JUGAR', RGBc(214, 178, 60), 1);
+    Color := RGBc(170, 170, 196);
+  end;
+  Texto := FComprobador.TextoEstado;
+  if Length(Texto) > 48 then
+    Texto := Copy(Texto, 1, 48);
+  FLienzo.TextoCentrado(162, Texto, Color);
 
-  FLienzo.TextoCentrado(155, 'FLECHAS MUEVEN   ESPACIO SALTA   SHIFT CORRE', RGBc(196, 196, 218), 1);
-  FLienzo.TextoCentrado(167, 'P PAUSA          ESC SALE', RGBc(150, 150, 176), 1);
-  FLienzo.TextoCentrado(176, 'META: TOCAR LA COMPUERTA AL FINAL DE CADA MUNDO', RGBc(120, 210, 160), 1);
+  FLienzo.TextoCentrado(178, 'FLECHAS MUEVEN   ENTER ELIGE', RGBc(150, 160, 190));
+  FLienzo.TextoCentrado(190, 'ESC VUELVE AL MENU DURANTE EL JUEGO', RGBc(120, 130, 160));
+end;
 
-  FLienzo.Texto(6, 191, 'VERSION ' + VERSION_JUEGO, RGBc(30, 20, 12));
-  FLienzo.Texto(ANCHO_VIRTUAL - 6 - FLienzo.AnchoTexto('HECHO CON FREE PASCAL'), 191,
-    'HECHO CON FREE PASCAL', RGBc(30, 20, 12));
+procedure TJuego.DibujarCodigos;
+var
+  I, X, Y: Integer;
+  Caracter: Char;
+begin
+  DibujarFondoMenu;
+  FLienzo.Barra(0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL, RGBc(10, 9, 18));
+  FLienzo.Barra(30, 40, 260, 116, RGBc(18, 16, 28));
+  FLienzo.Marco(30, 40, 260, 116, RGBc(120, 226, 246));
+  FLienzo.TextoCentradoSombra(50, 'CODIGOS', RGBc(120, 226, 246), RGBc(10, 10, 18), 2);
+  FLienzo.TextoCentrado(74, 'ESCRIBE EL CODIGO DE UN MUNDO', RGBc(210, 210, 230));
+
+  for I := 1 to LARGO_CODIGO do
+  begin
+    X := 116 + (I - 1) * 24;
+    Y := 88;
+    FLienzo.Barra(X, Y, 18, 20, RGBc(40, 38, 60));
+    FLienzo.Marco(X, Y, 18, 20, RGBc(96, 96, 130));
+    if I <= Length(FCodigo) then
+      Caracter := FCodigo[I]
+    else
+      Caracter := '_';
+    FLienzo.Texto(X + 6, Y + 6, Caracter, RGBc(255, 236, 140));
+  end;
+
+  if FTiempoMensaje > 0 then
+    FLienzo.TextoCentrado(118, FMensajeCodigo, RGBc(232, 110, 100))
+  else
+    FLienzo.TextoCentrado(118, 'CADA MUNDO ENTREGA UN CODIGO', RGBc(150, 150, 176));
+  FLienzo.TextoCentrado(134, 'ENTER ACEPTA   ESC VUELVE', RGBc(180, 190, 214));
+end;
+
+procedure TJuego.DibujarNovedades;
+var
+  I, Y, Visibles, Desde, Hasta: Integer;
+  Color: TColor32;
+  Texto: string;
+begin
+  DibujarFondoMenu;
+  FLienzo.Barra(0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL, RGBc(10, 9, 18));
+  FLienzo.Barra(8, 6, 304, 188, RGBc(18, 16, 28));
+  FLienzo.Marco(8, 6, 304, 188, RGBc(160, 200, 210));
+  FLienzo.TextoCentradoSombra(16, 'NOVEDADES', RGBc(255, 226, 96), RGBc(10, 10, 18), 2);
+
+  Visibles := 14;
+  Desde := FDesplazamientoNovedades;
+  Hasta := Desde + Visibles - 1;
+  if Hasta > High(NOVEDADES) then
+    Hasta := High(NOVEDADES);
+  Y := 40;
+  for I := Desde to Hasta do
+  begin
+    Color := RGBc(206, 210, 230);
+    if Copy(NOVEDADES[I], 1, 7) = 'VERSION' then
+      Color := RGBc(255, 218, 120);
+    FLienzo.Texto(16, Y, NOVEDADES[I], Color);
+    Inc(Y, 9);
+  end;
+
+  if FDesplazamientoNovedades > 0 then
+    FLienzo.Texto(298, 30, '^', RGBc(180, 190, 214));
+  if Hasta < High(NOVEDADES) then
+    FLienzo.Texto(298, 172, 'v', RGBc(180, 190, 214));
+
+  case FComprobador.Estado of
+    acDisponible: Color := RGBc(255, 206, 120);
+    acAlDia: Color := RGBc(140, 230, 150);
+    acError: Color := RGBc(226, 140, 130);
+  else
+    Color := RGBc(170, 170, 196);
+  end;
+  Texto := FComprobador.TextoEstado;
+  if Length(Texto) > 50 then
+    Texto := Copy(Texto, 1, 50);
+  FLienzo.TextoCentrado(172, Texto, Color);
+  FLienzo.TextoCentrado(184, 'FLECHAS LEEN   R REVISA   ESC VUELVE', RGBc(140, 150, 180));
 end;
 
 procedure TJuego.DibujarPausa;
@@ -1717,15 +1947,24 @@ begin
 end;
 
 procedure TJuego.DibujarFinNivel;
+var
+  Linea: string;
 begin
-  DibujarBanner('NIVEL COMPLETO', 'BONO ' + IntToStr(FTiempo * 10),
-    'SIGUIENTE MUNDO', RGBc(120, 226, 160));
+  if FNivelActual < TOTAL_NIVELES then
+    Linea := 'CODIGO MUNDO ' + IntToStr(FNivelActual + 1) + ': ' +
+      CodigoDeNivel(FNivelActual + 1)
+  else
+    Linea := 'ULTIMO MUNDO';
+  DibujarBanner('MUNDO ' + IntToStr(FNivelActual) + ' COMPLETO',
+    'BONO ' + IntToStr(FTiempo * 10), Linea, RGBc(120, 226, 160));
 end;
 
 procedure TJuego.Dibujar;
 begin
   case FEstado of
-    ejTitulo: DibujarTitulo;
+    ejMenu: DibujarMenu;
+    ejCodigos: DibujarCodigos;
+    ejNovedades: DibujarNovedades;
     ejJugando, ejPausa, ejMuere, ejFinNivel:
       begin
         DibujarFondo;
@@ -1763,6 +2002,9 @@ end;
 
 procedure TJuego.EmpezarEnNivel(Numero: Integer);
 begin
+  FPuntos := 0;
+  FTuercas := 0;
+  FVidas := 3;
   CargarNivel(Numero);
   FEstado := ejJugando;
   if FSonido <> nil then
@@ -1776,7 +2018,7 @@ begin
   { El teclado se lee una sola vez por fotograma dentro de Actualizar. Si se
     leyera tambien aqui, la copia de las pulsaciones anteriores quedaria igual
     a la actual y ninguna tecla se detectaria como recien pulsada. }
-  while FVentana.ProcesarMensajes do
+  while (not FTErminar) and FVentana.ProcesarMensajes do
   begin
     Actualizar;
     Dibujar;
@@ -1791,10 +2033,23 @@ var
   P: TPulsos;
 begin
   ForceDirectories(Carpeta);
-  FEstado := ejTitulo;
+  FEstado := ejMenu;
   FTiempoEstado := 0;
+  FOpcionMenu := 0;
   Dibujar;
-  FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) + 'titulo.bmp');
+  FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) + 'menu.bmp');
+
+  FEstado := ejCodigos;
+  FCodigo := CodigoDeNivel(7);
+  FMensajeCodigo := '';
+  FTiempoMensaje := 0;
+  Dibujar;
+  FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) + 'codigos.bmp');
+
+  FEstado := ejNovedades;
+  FDesplazamientoNovedades := 0;
+  Dibujar;
+  FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) + 'novedades.bmp');
 
   for I := 1 to TOTAL_NIVELES do
   begin
@@ -1850,6 +2105,12 @@ begin
       FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) +
         'final_abierto' + IntToStr(I) + '.bmp');
       FAperturaPuerta := 0;
+      FEstado := ejFinNivel;
+      FTiempoEstado := 60;
+      Dibujar;
+      FLienzo.GuardarBMP(IncludeTrailingPathDelimiter(Carpeta) +
+        'codigo' + IntToStr(I) + '.bmp');
+      FEstado := ejJugando;
     end;
   end;
 end;
@@ -2144,7 +2405,7 @@ begin
 
   { Recorrido completo de los seis mundos con los enemigos desactivados:
     comprueba que no hay paredes ni huecos imposibles de salvar. }
-  Registrar('Paso 9: los diez mundos se pueden recorrer');
+  Registrar('Paso 9: los veinte mundos se pueden recorrer');
   FMortalInactivo := True;
   for Numero := 1 to TOTAL_NIVELES do
   begin
@@ -2212,7 +2473,55 @@ begin
   Comprobar(TileEn(3, 5) <> 'U', 'la caja no se abre al golpearla desde abajo');
   Comprobar(FTuercas < 1, 'la caja abierta no entrega la tuerca');
 
-  { 6. Dibujo de los seis niveles sin ventana. }
+  Registrar('Paso 12: codigos de nivel');
+  for I := 1 to TOTAL_NIVELES do
+  begin
+    Comprobar(Length(CodigoDeNivel(I)) <> LARGO_CODIGO,
+      'el codigo del mundo ' + IntToStr(I) + ' no tiene cuatro caracteres');
+    Comprobar(NivelDeCodigo(CodigoDeNivel(I)) <> I,
+      'el codigo del mundo ' + IntToStr(I) + ' no devuelve ese mundo');
+    for Numero := 1 to I - 1 do
+      Comprobar(CodigoDeNivel(Numero) = CodigoDeNivel(I),
+        'los mundos ' + IntToStr(Numero) + ' y ' + IntToStr(I) + ' comparten codigo');
+  end;
+  Comprobar(NivelDeCodigo('ZZZZ') <> 0, 'un codigo inventado fue aceptado');
+
+  Registrar('Paso 13: menu y entrada de codigos');
+  FEstado := ejMenu;
+  FOpcionMenu := 0;
+  FillChar(P, SizeOf(P), 0);
+  DarPulsos(P);
+  Actualizar;
+  P.Enter := True;
+  DarPulsos(P);
+  Actualizar;
+  Comprobar(FEstado <> ejJugando, 'la opcion jugar no inicia la partida');
+  Comprobar(FNivelActual <> 1, 'la partida no empieza en el mundo 1');
+  P.Enter := False;
+  DarPulsos(P);
+  Actualizar;
+  P.Escape := True;
+  DarPulsos(P);
+  Actualizar;
+  Comprobar(FEstado <> ejMenu, 'escape no vuelve al menu');
+  P.Escape := False;
+  DarPulsos(P);
+  Actualizar;
+  FOpcionMenu := 1;
+  P.Enter := True;
+  DarPulsos(P);
+  Actualizar;
+  Comprobar(FEstado <> ejCodigos, 'el menu no abre la pantalla de codigos');
+  P.Enter := False;
+  DarPulsos(P);
+  Actualizar;
+  DarTexto(CodigoDeNivel(5));
+  DarTexto(#13);
+  Actualizar;
+  Comprobar(FNivelActual <> 5, 'el codigo no lleva al mundo 5');
+  Comprobar(FEstado <> ejJugando, 'el codigo no inicia la partida');
+
+  { 6. Dibujo de los veinte niveles sin ventana. }
   for Numero := 1 to TOTAL_NIVELES do
   begin
     CargarNivel(Numero);

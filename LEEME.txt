@@ -1,4 +1,4 @@
-SALTA MUNDOS 1.1.0
+SALTA MUNDOS 1.2.0
 ==================
 
 Juego de plataformas por mundos, escrito en Object Pascal (modo Delphi) y
@@ -7,24 +7,52 @@ compilado con Free Pascal para Windows de 64 bits.
 COMO JUGAR
 ----------
 
-Descomprima el archivo zip y ejecute SaltaMundos.exe.
+Descomprima el archivo zip y ejecute SaltaMundos.exe. El juego arranca en un
+menu con cuatro opciones que se recorren con las flechas:
+
+  JUGAR       partida nueva desde el mundo 1
+  CODIGOS     empezar en un mundo concreto escribiendo su codigo
+  NOVEDADES   cambios de esta version y de las anteriores
+  SALIR       cerrar el juego
+
+En el juego:
 
   Flechas izquierda y derecha   mover
   Flecha arriba, W, Z o espacio saltar
   Shift o X                     correr
   P                             pausa
-  Escape                        volver al titulo
+  Escape                        volver al menu
 
 Se puede jugar con teclado en espanol o en ingles, sin configuracion.
+
+CODIGOS DE MUNDO
+----------------
+
+Cada mundo tiene un codigo de cuatro caracteres. Al terminarlo, el cartel de
+nivel completo muestra el codigo del mundo siguiente. Escribalo en la opcion
+CODIGOS del menu para retomar la partida en ese punto.
+
+En la pantalla de codigos se escribe con el teclado, el retroceso borra y
+Enter acepta. Se aceptan mayusculas y minusculas. Si el codigo no existe, el
+juego lo avisa y no cambia de pantalla.
+
+COMPROBACION DE VERSION
+-----------------------
+
+El menu consulta la ultima publicacion del repositorio en GitHub al abrirse y
+cada vez que se pulsa R. El resultado aparece en el pie del menu: si hay una
+version mas nueva, se muestra su numero. Sin conexion el juego funciona igual
+y solo se avisa de que no se pudo consultar.
 
 OBJETIVO
 --------
 
 Cada mundo termina en una compuerta metalica con una baliza. Hay que llegar
 hasta ella antes de que se acabe el tiempo; al tocarla, las hojas se abren y
-comienza el mundo siguiente. Son diez mundos con ambientaciones distintas:
-pradera, atardecer, noche, cueva, desierto, fabrica, bosque, volcan, hielo y
-espacio.
+comienza el mundo siguiente. Son veinte mundos con ambientaciones distintas:
+pradera, atardecer, noche, cueva, desierto, fabrica, bosque, volcan, hielo,
+espacio, selva, canon, glaciar, ciudad, nubes, pantano, cristal, mina, orbita
+y nucleo.
 
   Tuercas doradas   valen 20 puntos y cada 100 dan una vida extra
   Bichos            se eliminan saltando encima
@@ -37,7 +65,9 @@ REQUISITOS
 ----------
 
 Windows de 64 bits. El ejecutable no necesita instalacion ni archivos
-adicionales: los graficos, la musica y los niveles estan dentro del binario.
+adicionales: los graficos, la musica, los niveles y los codigos estan dentro
+del binario. La comprobacion de version usa la conexion a internet del equipo,
+pero no es obligatoria para jugar.
 
 COMPILAR
 --------

@@ -16,8 +16,8 @@ $topmost = [IntPtr](-1)
 $noActivar = 0x0010
 $mostrar = 0x0040
 
-# Se arranca directamente en un nivel para revisar el dibujo del juego.
-$proc = Start-Process -FilePath "dist\SaltaMundos.exe" -ArgumentList '--nivel','1' -PassThru
+# Se arranca el juego sin argumentos para revisar el menu inicial.
+$proc = Start-Process -FilePath "dist\SaltaMundos.exe" -PassThru
 Start-Sleep -Seconds 2
 $proc.Refresh()
 $handle = $proc.MainWindowHandle
@@ -39,7 +39,7 @@ $bmp = New-Object System.Drawing.Bitmap $ancho, $alto
 $g = [System.Drawing.Graphics]::FromImage($bmp)
 $g.CopyFromScreen(0, 0, 0, 0, $bmp.Size)
 $g.Dispose()
-$bmp.Save((Join-Path (Get-Location) "build\juego.png"), [System.Drawing.Imaging.ImageFormat]::Png)
+$bmp.Save((Join-Path (Get-Location) "build\menu-ventana.png"), [System.Drawing.Imaging.ImageFormat]::Png)
 $bmp.Dispose()
 
 Start-Sleep -Seconds 1

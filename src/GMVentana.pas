@@ -42,6 +42,7 @@ type
     FFrecuencia: Int64;
     FUltimoTic: Int64;
     FVisible: Boolean;
+    FCaracteres: string;
     procedure CrearRecursos;
     procedure LiberarRecursos;
     function TikActual: Int64;
@@ -54,6 +55,9 @@ type
     procedure Presentar;
     procedure EsperarSiguienteFotograma;
     function LeerPulsos: TPulsos;
+    procedure AgregarCaracter(Caracter: Char);
+    function TomarTexto: string;
+    procedure LimpiarTexto;
     procedure GuardarPantalla(const Archivo: string);
     property Lienzo: TSuperficie read FLienzo;
     property Escala: Integer read FEscala;
@@ -72,6 +76,19 @@ var
   Pintura: PAINTSTRUCT;
 begin
   case Mensaje of
+    WM_CHAR:
+      begin
+        { Se guardan los caracteres imprimibles para la pantalla de codigos. }
+        if (GVentanaActiva <> nil) and (WParam >= 32) and (WParam < 127) then
+          GVentanaActiva.AgregarCaracter(Chr(WParam));
+        Result := 0;
+      end;
+    WM_KEYDOWN:
+      begin
+        if (GVentanaActiva <> nil) and (WParam = VK_BACK) then
+          GVentanaActiva.AgregarCaracter(#8);
+        Result := DefWindowProcA(Handle, Mensaje, WParam, LParam);
+      end;
     WM_PAINT:
       begin
         { Al descubrir o restaurar la ventana hay que volver a pintar el
@@ -108,6 +125,7 @@ begin
   FEscala := 2;
   FCerrada := False;
   FVisible := True;
+  FCaracteres := '';
 end;
 
 destructor TVentana.Destroy;
@@ -312,6 +330,23 @@ begin
   Result.Enter := Activa(VK_RETURN) or Activa(VK_SPACE);
   Result.Escape := Activa(VK_ESCAPE);
   Result.Pausa := Activa(Ord('P'));
+end;
+
+procedure TVentana.AgregarCaracter(Caracter: Char);
+begin
+  if Length(FCaracteres) < 64 then
+    FCaracteres := FCaracteres + Caracter;
+end;
+
+function TVentana.TomarTexto: string;
+begin
+  Result := FCaracteres;
+  FCaracteres := '';
+end;
+
+procedure TVentana.LimpiarTexto;
+begin
+  FCaracteres := '';
 end;
 
 procedure TVentana.GuardarPantalla(const Archivo: string);
